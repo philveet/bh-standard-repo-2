@@ -26,6 +26,9 @@ export const availableApis = {
   'react-pdf': {
     isEnabled: () => isApiEnabled('react-pdf'),
   },
+  elevenlabs: {
+    isEnabled: () => isApiEnabled('elevenlabs'),
+  },
 };
 
 // Helper function to get all currently enabled APIs

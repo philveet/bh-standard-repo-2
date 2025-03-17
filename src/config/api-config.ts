@@ -7,7 +7,8 @@ export type ApiName =
   | 'resend' 
   | 'mediawiki' 
   | 'react-pdf' 
-  | 'stripe';
+  | 'stripe'
+  | 'elevenlabs';
 
 // By default all APIs are enabled
 // This can be overridden in environment variables
@@ -19,7 +20,8 @@ export const ENABLED_APIS: Record<ApiName, boolean> = {
   resend: true,
   mediawiki: true,
   'react-pdf': true,
-  stripe: true
+  stripe: true,
+  elevenlabs: true
 };
 
 /**

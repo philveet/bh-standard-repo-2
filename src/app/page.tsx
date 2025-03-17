@@ -18,6 +18,7 @@ export default function Home() {
     mediawiki: 'v6.4.1',
     'react-pdf': 'v3.1.12',
     stripe: 'v13.3.0',
+    elevenlabs: 'v1.1.1',
   };
 
   // Get API statuses
