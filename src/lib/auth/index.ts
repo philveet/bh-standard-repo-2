@@ -14,6 +14,7 @@ export interface ExtendedSession extends Session {
     name?: string | null;
     email?: string | null;
     image?: string | null;
+    role?: string;
   }
 }
 
@@ -54,6 +55,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           image: user.image,
+          role: user.role || 'user',
         };
       }
     })
@@ -67,6 +69,11 @@ export const authOptions: NextAuthOptions = {
       // Add user id to token when user signs in
       if (user) {
         token.sub = user.id;
+        // Include role in the token if available
+        const userData = user as any;
+        if (userData.role) {
+          token.role = userData.role;
+        }
       }
       return token;
     },
@@ -76,6 +83,11 @@ export const authOptions: NextAuthOptions = {
       
       if (token.sub) {
         extendedSession.user.id = token.sub;
+      }
+      
+      // Include role in the session
+      if (token.role) {
+        extendedSession.user.role = token.role as string;
       }
       
       return extendedSession;

@@ -9,6 +9,7 @@ CREATE TABLE auth.users (
   name TEXT,
   email_verified TIMESTAMP,
   image TEXT,
+  role TEXT NOT NULL DEFAULT 'user',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -48,6 +49,7 @@ CREATE TABLE auth.sessions (
 
 -- Add indexes for faster queries
 CREATE INDEX idx_users_email ON auth.users(email);
+CREATE INDEX idx_users_role ON auth.users(role);
 CREATE INDEX idx_accounts_user_id ON auth.accounts(user_id);
 CREATE INDEX idx_sessions_user_id ON auth.sessions(user_id);
 CREATE INDEX idx_sessions_token ON auth.sessions(session_token);

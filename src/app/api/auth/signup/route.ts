@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
         email,
         name,
         password: hashedPassword,
+        role: "user", // Default role
       })
       .select("*")
       .single();

@@ -1,6 +1,7 @@
 import { availableApis } from '@/lib/api/core';
 import { IconButton } from '@/components/ui/IconButton';
 import { RefreshCw } from '@/lib/icons';
+import AuthTestingSection from '@/components/auth/AuthTestingSection';
 
 interface ApiStatus {
   name: string;
@@ -41,7 +42,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-8">
           <div className="p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-semibold">API Status</h2>
@@ -111,6 +112,9 @@ export default function Home() {
             </div>
           </div>
         </div>
+        
+        {/* Authentication Testing Section */}
+        <AuthTestingSection />
       </div>
     </main>
   );
