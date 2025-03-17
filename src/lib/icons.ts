@@ -21,6 +21,7 @@ export {
   Search,
   Settings,
   Home,
+  RefreshCw,
   
   // Actions
   Plus,

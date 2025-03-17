@@ -1,4 +1,6 @@
 import { availableApis } from '@/lib/api/core';
+import { IconButton } from '@/components/ui/IconButton';
+import { RefreshCw, Settings } from '@/lib/icons';
 
 interface ApiStatus {
   name: string;
@@ -41,7 +43,25 @@ export default function Home() {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
           <div className="p-6">
-            <h2 className="text-2xl font-semibold mb-4">API Status</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-semibold">API Status</h2>
+              <div className="flex gap-2">
+                <IconButton 
+                  icon={RefreshCw} 
+                  variant="outline" 
+                  size="sm"
+                >
+                  Refresh
+                </IconButton>
+                <IconButton 
+                  icon={Settings} 
+                  variant="primary" 
+                  size="sm"
+                >
+                  Configure
+                </IconButton>
+              </div>
+            </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead>
