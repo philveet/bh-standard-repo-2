@@ -1,4 +1,5 @@
 import { isApiEnabled } from '@/config/api-config';
+import { getElevenlabsClient } from '@/lib/api/elevenlabs';
 
 // Central registry of all available APIs
 export const availableApis = {
@@ -28,6 +29,7 @@ export const availableApis = {
   },
   elevenlabs: {
     isEnabled: () => isApiEnabled('elevenlabs'),
+    getClient: getElevenlabsClient,
   },
 };
 
