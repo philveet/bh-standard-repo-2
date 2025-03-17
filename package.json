@@ -30,6 +30,10 @@
     "eslint-plugin-react": "^7.33.2"
   },
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
     "configure-apis": "node scripts/configure-apis.js"
   }
 }
