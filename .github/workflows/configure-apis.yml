@@ -1,0 +1,98 @@
+name: Configure APIs
+
+on:
+  workflow_dispatch:
+    inputs:
+      replicate:
+        description: 'Include Replicate API'
+        type: boolean
+        default: false
+      anthropic:
+        description: 'Include Anthropic API'
+        type: boolean
+        default: false
+      openai:
+        description: 'Include OpenAI API'
+        type: boolean
+        default: false
+      deepgram:
+        description: 'Include Deepgram API'
+        type: boolean
+        default: false
+      resend:
+        description: 'Include Resend API'
+        type: boolean
+        default: false
+      mediawiki:
+        description: 'Include MediaWiki API'
+        type: boolean
+        default: false
+      react-pdf:
+        description: 'Include react-pdf API'
+        type: boolean
+        default: false
+      stripe:
+        description: 'Include Stripe API'
+        type: boolean
+        default: false
+      remove_unused:
+        description: 'Remove unused API code'
+        type: boolean
+        default: true
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Prepare API list
+        id: prepare
+        run: |
+          APIs=""
+          if [ "${{ github.event.inputs.replicate }}" == "true" ]; then
+            APIs="$APIs replicate"
+          fi
+          if [ "${{ github.event.inputs.anthropic }}" == "true" ]; then
+            APIs="$APIs anthropic"
+          fi
+          if [ "${{ github.event.inputs.openai }}" == "true" ]; then
+            APIs="$APIs openai"
+          fi
+          if [ "${{ github.event.inputs.deepgram }}" == "true" ]; then
+            APIs="$APIs deepgram"
+          fi
+          if [ "${{ github.event.inputs.resend }}" == "true" ]; then
+            APIs="$APIs resend"
+          fi
+          if [ "${{ github.event.inputs.mediawiki }}" == "true" ]; then
+            APIs="$APIs mediawiki"
+          fi
+          if [ "${{ github.event.inputs.react-pdf }}" == "true" ]; then
+            APIs="$APIs react-pdf"
+          fi
+          if [ "${{ github.event.inputs.stripe }}" == "true" ]; then
+            APIs="$APIs stripe"
+          fi
+          echo "apis=$APIs" >> $GITHUB_OUTPUT
+      
+      - name: Configure APIs
+        run: |
+          node scripts/configure-apis.js ${{ steps.prepare.outputs.apis }}
+      
+      - name: Install dependencies
+        run: npm install
+      
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Configure with selected APIs: ${{ steps.prepare.outputs.apis }}"
+          git push 
