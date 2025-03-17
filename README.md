@@ -13,6 +13,7 @@ A modular Next.js application template with optional API integrations. This temp
 - **Supabase**: 2.33.1 (Database)
 - **Upstash Redis**: 1.22.0 (Caching)
 - **NextAuth.js**: 4.23.1 (Authentication)
+- **Lucide React**: 0.436.0 (Icon library)
 
 ## Optional APIs
 
@@ -22,6 +23,7 @@ This template includes several optional API integrations that can be enabled or 
 - **OpenAI**: 4.6.0 - Text generation and completions
 - **Anthropic**: 0.36.3 - Claude AI models
 - **Replicate**: 0.18.0 - Access to open-source AI models for images, audio, and more
+- **ElevenLabs**: 1.1.1 - Text-to-speech API
 
 ### Media & Communication
 - **Deepgram**: 2.4.0 - Speech-to-text transcription
@@ -57,7 +59,7 @@ This template includes several optional API integrations that can be enabled or 
    npm run configure-apis -- openai anthropic stripe
    
    # Or enable all APIs
-   npm run configure-apis -- replicate anthropic openai deepgram resend mediawiki react-pdf stripe
+   npm run configure-apis -- replicate anthropic openai deepgram resend mediawiki react-pdf stripe elevenlabs
    ```
 
 ### Option 2: Manual Clone
@@ -130,6 +132,11 @@ DEEPGRAM_API_KEY=your-deepgram-api-key
 RESEND_API_KEY=your-resend-api-key
 ```
 
+### ElevenLabs
+```
+ELEVENLABS_API_KEY=your-elevenlabs-api-key
+```
+
 ### Stripe
 ```
 STRIPE_SECRET_KEY=your-stripe-secret-key
@@ -181,4 +188,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-```
