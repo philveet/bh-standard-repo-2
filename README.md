@@ -1,6 +1,14 @@
 # BH Standard Repository
 
-A modular Next.js application template with optional API integrations. This template allows you to select which third-party APIs you want to include in your project, making it easy to build applications that use AI, email, payment processing, document generation, and more.
+A Next.js template repository with integrated API support and enhanced authentication.
+
+## Features
+
+- Next.js App Router structure
+- Centralized API configuration
+- Configurable API selection via GitHub workflow
+- Enhanced Supabase Authentication system with user roles
+- API status display
 
 ## Core Technologies
 
@@ -43,21 +51,58 @@ This repository includes a complete authentication system built with Supabase Au
 - Email/password signup and login
 - User role management (regular users vs admin users)
 - Session handling throughout the app
+- Role-based access control components
 - Testing interface for auth functionality
+
+### Authentication Architecture
+
+The authentication system is built with Next.js App Router best practices:
+
+- **Client/Server Separation**: Authentication components properly separate client and server code
+- **Lazy Loading**: Supabase client is lazily initialized to prevent hydration issues
+- **Performance Optimized**: Components use React hooks like `useMemo` and `useCallback` to prevent unnecessary re-renders
+- **Session Management**: Automatic token refresh and secure session handling
+- **Role-based Access Control**: `RoleGuard` component for protecting routes based on user roles
 
 ### Setup Authentication
 
 1. Create a Supabase project at [https://app.supabase.io/](https://app.supabase.io/)
-2. Add your Supabase credentials to the environment variables:
-
-```
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-```
-
+2. Add your Supabase credentials to the environment variables (see `.env.example`)
 3. Set up the database schema by running the SQL script in `src/app/api/supabase-migrations/profiles.sql`
 
 For detailed instructions, see [Supabase Auth Documentation](./docs/supabase-auth.md)
+
+### Using Authentication Components
+
+#### Role-Based Access Control
+
+```jsx
+import { RoleGuard } from '@/lib/auth/RoleGuard';
+
+// Protect content based on user role
+function AdminPage() {
+  return (
+    <RoleGuard 
+      allowedRoles={['admin']}
+      redirectTo="/login"
+    >
+      <h1>Admin Content</h1>
+      <p>Only admin users can see this</p>
+    </RoleGuard>
+  );
+}
+```
+
+#### Authenticated API Requests
+
+```jsx
+import { authenticatedFetch } from '@/lib/auth/api-client';
+
+async function fetchProtectedData() {
+  const response = await authenticatedFetch('/api/protected-data');
+  return response.json();
+}
+```
 
 ## API Support
 
@@ -71,31 +116,11 @@ This template includes support for multiple APIs that can be enabled/disabled as
 - Deepgram
 - Wiki.js
 - React PDF
+- Supabase
 
 ### Adding API Keys
 
-Create a `.env.local` file in the root directory and add your API keys:
-
-```
-# OpenAI
-OPENAI_API_KEY=your-openai-key
-
-# Anthropic
-ANTHROPIC_API_KEY=your-anthropic-key
-
-# Replicate
-REPLICATE_API_TOKEN=your-replicate-token
-
-# Stripe
-STRIPE_SECRET_KEY=your-stripe-secret-key
-STRIPE_PUBLISHABLE_KEY=your-stripe-publishable-key
-
-# Other APIs...
-
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-```
+Create a `.env.local` file in the root directory and add your API keys. See the `.env.example` file for all required environment variables.
 
 ### Configuring APIs
 
@@ -111,44 +136,27 @@ Alternatively, you can use the GitHub Actions workflow to configure APIs:
 
 ## Getting Started
 
-### Option 1: Use as a Template (Recommended)
+1. Clone this repository
+2. Install dependencies with `npm install`
+3. Copy `.env.example` to `.env.local` and add your environment variables
+4. Configure the desired APIs
+5. Set up Supabase Auth (see instructions above)
+6. Run the development server with `npm run dev`
 
-1. Click the "Use this template" button at the top of this repository
-2. Give your new repository a name
-3. Clone your new repository locally:
-   ```bash
-   git clone https://github.com/yourusername/your-repo-name.git
-   cd your-repo-name
-   ```
+## Documentation
 
-4. Install dependencies:
-   ```bash
-   npm install
-   ```
+Detailed documentation for various parts of the system:
 
-5. Configure the APIs you want to use:
-   ```bash
-   # Enable only specific APIs (e.g., OpenAI, Anthropic, and Stripe)
-   npm run configure-apis -- openai anthropic stripe
-   
-   # Or enable all APIs
-   npm run configure-apis -- replicate anthropic openai deepgram resend mediawiki react-pdf stripe elevenlabs
-   ```
+- [Supabase Auth System](./docs/supabase-auth.md)
+- [API Registry](./docs/api-registry.md) (TBD)
+- [GitHub Workflow](./docs/github-workflow.md) (TBD)
 
-### Option 2: Manual Clone
+## Contributing
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/yourusername/bh-standard-repo.git
-   cd bh-standard-repo
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Configure the APIs you want to use (see step 5 above)
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
 ## Development
 

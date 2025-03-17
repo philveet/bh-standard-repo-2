@@ -1,6 +1,17 @@
-# Supabase Authentication System
+# Enhanced Supabase Authentication System
 
-This document provides instructions for managing the Supabase Authentication system integrated into this project.
+This document provides detailed instructions for managing the Supabase Authentication system integrated into this project.
+
+## Enhanced Implementation Features
+
+Our authentication system provides several advanced features beyond basic Supabase Auth:
+
+1. **Optimized for Next.js App Router**: Properly separates client and server components
+2. **Lazy Loading**: Uses lazy initialization of the Supabase client to prevent hydration issues
+3. **Performance Optimized**: Implements React's `useMemo` and `useCallback` for efficient re-rendering
+4. **Role-Based Access Control**: Includes a `RoleGuard` component for protecting routes by user role
+5. **Session Management**: Automatic token refresh and secure handling of auth state
+6. **API Integration**: Utilities for making authenticated API requests
 
 ## Setup and Configuration
 
@@ -24,6 +35,81 @@ This document provides instructions for managing the Supabase Authentication sys
    - Go to the SQL Editor in your Supabase dashboard
    - Execute the SQL script found in `src/app/api/supabase-migrations/profiles.sql`
    - This creates the profiles table with roles and sets up Row Level Security
+
+## Key Components
+
+### 1. Supabase Client (`src/lib/supabase/client.ts`)
+
+- Uses lazy initialization pattern to prevent hydration issues
+- Implements a singleton pattern for the Supabase client
+- Provides proper error handling for missing credentials
+
+```typescript
+import { getSupabaseClient } from '@/lib/supabase/client';
+
+// Get the singleton instance
+const supabase = getSupabaseClient();
+```
+
+### 2. Auth Context (`src/lib/auth/AuthContext.tsx`)
+
+- Implements React Context API for app-wide auth state
+- Uses optimized hooks for performance
+- Handles session management and user roles
+- Includes automatic token refresh
+
+```typescript
+import { useAuth } from '@/lib/auth/AuthContext';
+
+function MyComponent() {
+  const { user, userRole, signIn, signOut } = useAuth();
+  // Use auth state and functions
+}
+```
+
+### 3. Role Guard (`src/lib/auth/RoleGuard.tsx`)
+
+- Protects content based on user roles
+- Supports redirection for unauthorized access
+- Customizable fallback content
+
+```typescript
+import { RoleGuard } from '@/lib/auth/RoleGuard';
+
+function AdminPage() {
+  return (
+    <RoleGuard allowedRoles={['admin']} redirectTo="/login">
+      <h1>Admin Dashboard</h1>
+      {/* Admin content */}
+    </RoleGuard>
+  );
+}
+```
+
+### 4. API Client (`src/lib/auth/api-client.ts`)
+
+- Utilities for making authenticated API requests
+- Session validation helpers
+- Role checking functions
+
+```typescript
+import { authenticatedFetch, hasRole } from '@/lib/auth/api-client';
+
+async function fetchAdminData() {
+  // Check if user is admin
+  const isAdmin = await hasRole('admin');
+  if (!isAdmin) return null;
+  
+  // Make authenticated request
+  const response = await authenticatedFetch('/api/admin/data');
+  return response.json();
+}
+```
+
+### 5. Auth API Routes
+
+- `/api/auth/session` - Get current session information
+- `/api/auth/callback` - Handle OAuth and email confirmation redirects
 
 ## Authentication Settings
 
@@ -105,14 +191,21 @@ The application includes a testing panel at the bottom of the home page where yo
 
 Common issues:
 
-1. **Email delivery problems**:
+1. **Hydration errors**:
+   - Check that you're using `'use client'` directive in components that use authentication
+   - Ensure the Auth Provider is correctly set up in your app layout
+
+2. **Email delivery problems**:
    - Check spam folders
    - Verify SMTP settings
    - Test emails in Supabase dashboard
 
-2. **Role changes not reflecting**:
+3. **Role changes not reflecting**:
    - Log out and log back in to refresh session
+   - Clear the browser cache
+   - Check for errors in the browser console
 
-3. **Unauthorized errors**:
+4. **Unauthorized errors**:
    - Ensure RLS policies are properly set up
-   - Check that users have the correct roles 
+   - Check that users have the correct roles
+   - Verify that tokens are being properly passed in API requests 
