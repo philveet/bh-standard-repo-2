@@ -1,26 +1,76 @@
 // This is a basic setup, you'll need to expand based on your actual auth providers
+import { NextAuthOptions } from "next-auth";
 import { Session } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
+import CredentialsProvider from "next-auth/providers/credentials";
+import { SupabaseAdapter } from "./supabase-adapter";
+import { supabase } from "@/lib/supabase";
+import { compare, hash } from "bcrypt";
 
 // Extended Session type with user.id
-interface ExtendedSession extends Session {
+export interface ExtendedSession extends Session {
   user: {
+    id: string;
     name?: string | null;
     email?: string | null;
     image?: string | null;
-    id?: string;
   }
 }
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
+  adapter: SupabaseAdapter(),
   providers: [
-    // Add your providers here
+    CredentialsProvider({
+      name: "Email",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        // Find user by email
+        const { data: user, error } = await supabase
+          .from("auth.users")
+          .select("*")
+          .eq("email", credentials.email)
+          .single();
+
+        if (error || !user) {
+          return null;
+        }
+
+        // Verify password
+        const isValidPassword = await compare(credentials.password, user.password);
+        
+        if (!isValidPassword) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        };
+      }
+    })
   ],
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async session({ session, token }: { session: Session; token: JWT }): Promise<ExtendedSession> {
+    async jwt({ token, user }) {
+      // Add user id to token when user signs in
+      if (user) {
+        token.sub = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }): Promise<ExtendedSession> {
       // Cast to our extended type
       const extendedSession = session as ExtendedSession;
       
@@ -29,7 +79,13 @@ export const authOptions = {
       }
       
       return extendedSession;
-    },
+    }
+  },
+  pages: {
+    signIn: '/auth/signin',
+    error: '/auth/error',
+    verifyRequest: '/auth/verify-request',
+    newUser: '/auth/signup',
   },
   secret: process.env.NEXTAUTH_SECRET,
 }; 

@@ -36,6 +36,94 @@ This template includes several optional API integrations that can be enabled or 
 ### Information & Data
 - **MediaWiki**: 6.4.1 (wikijs) - Access to Wikipedia and other wiki content
 
+## Authentication System
+
+This repository includes a complete email-based authentication system using NextAuth.js, Supabase, and Resend. The system provides:
+
+- Email/password signup and login
+- Email verification
+- Password reset functionality
+- Protected routes
+- Session management
+
+### Authentication Setup
+
+Follow these steps to set up the authentication system:
+
+1. **Create a Supabase Database**:
+   - Sign up at [Supabase](https://supabase.com/) and create a new project
+   - Use the SQL schema in `src/db/schema.sql` to set up the required tables
+   - Add the Supabase URL and key to your `.env.local` file:
+     ```
+     SUPABASE_URL=your-supabase-url
+     SUPABASE_KEY=your-supabase-key
+     ```
+
+2. **Configure Resend for Email Sending**:
+   - Sign up at [Resend](https://resend.com/) and get your API key
+   - Add the Resend API key to your `.env.local` file:
+     ```
+     RESEND_API_KEY=your-resend-api-key
+     ```
+   - Update the sender email in `src/lib/email/index.ts` to match your verified domain
+
+3. **Set up NextAuth.js**:
+   - Generate a secure random string for the NextAuth secret
+   - Add the following to your `.env.local` file:
+     ```
+     NEXTAUTH_SECRET=your-generated-secret
+     NEXTAUTH_URL=http://localhost:3000 # Change in production
+     ```
+
+### Authentication Routes
+
+The authentication system includes the following routes:
+
+- `/auth/signin` - Sign in page
+- `/auth/signup` - Sign up page
+- `/auth/verify-request` - Verification email sent page
+- `/auth/reset-password` - Password reset page
+- `/auth/forgot-password` - Request password reset page
+- `/auth/error` - Error page for authentication issues
+- `/dashboard` - Example protected route
+
+### Protected Routes
+
+To create a protected route that requires authentication, use the `ProtectedRoute` component:
+
+```tsx
+"use client";
+
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
+export default function SecurePage() {
+  return (
+    <ProtectedRoute>
+      <div>
+        This content is only visible to authenticated users
+      </div>
+    </ProtectedRoute>
+  );
+}
+```
+
+You can also access the user data in client components using the `useAuth` hook:
+
+```tsx
+"use client";
+
+import { useAuth } from "@/lib/auth/session";
+
+export default function UserProfile() {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) return <div>Loading...</div>;
+  if (!isAuthenticated) return <div>Not authenticated</div>;
+  
+  return <div>Hello, {user.name || user.email}</div>;
+}
+```
+
 ## Getting Started
 
 ### Option 1: Use as a Template (Recommended)
