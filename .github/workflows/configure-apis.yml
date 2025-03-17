@@ -92,7 +92,7 @@ jobs:
             npm install replicate@0.18.0
           fi
           if [ "${{ github.event.inputs.anthropic }}" == "true" ]; then
-            npm install @anthropic-ai/sdk@0.7.1
+            npm install @anthropic-ai/sdk@0.36.3
           fi
           if [ "${{ github.event.inputs.openai }}" == "true" ]; then
             npm install openai@4.6.0
