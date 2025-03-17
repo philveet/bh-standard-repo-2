@@ -5,8 +5,12 @@ export interface ApiDefinition {
   packageVersion: string;
   envVar: string;
   description: string;
-  category: 'ai' | 'communication' | 'document' | 'payment' | 'information' | 'media';
+  category: 'ai' | 'communication' | 'document' | 'payment' | 'information' | 'media' | 'auth';
   defaultEnabled: boolean;
+  displayName: string;
+  envVarName: string;
+  additionalEnvVars?: string[];
+  defaultVersion: string;
 }
 
 // The single source of truth for all API configurations
@@ -19,6 +23,9 @@ export const API_REGISTRY: Record<string, ApiDefinition> = {
     description: 'Access to open-source AI models',
     category: 'ai',
     defaultEnabled: true,
+    displayName: 'Replicate',
+    envVarName: 'REPLICATE_API_KEY',
+    defaultVersion: '0.18.0'
   },
   anthropic: {
     name: 'Anthropic',
@@ -28,6 +35,9 @@ export const API_REGISTRY: Record<string, ApiDefinition> = {
     description: 'Claude AI models',
     category: 'ai',
     defaultEnabled: true,
+    displayName: 'Anthropic',
+    envVarName: 'ANTHROPIC_API_KEY',
+    defaultVersion: '0.36.3'
   },
   openai: {
     name: 'OpenAI',
@@ -37,6 +47,9 @@ export const API_REGISTRY: Record<string, ApiDefinition> = {
     description: 'Text generation and completions',
     category: 'ai',
     defaultEnabled: true,
+    displayName: 'OpenAI',
+    envVarName: 'OPENAI_API_KEY',
+    defaultVersion: '4.6.0'
   },
   deepgram: {
     name: 'Deepgram',
@@ -46,6 +59,9 @@ export const API_REGISTRY: Record<string, ApiDefinition> = {
     description: 'Speech-to-text transcription',
     category: 'media',
     defaultEnabled: true,
+    displayName: 'Deepgram',
+    envVarName: 'DEEPGRAM_API_KEY',
+    defaultVersion: '2.4.0'
   },
   resend: {
     name: 'Resend',
@@ -55,6 +71,9 @@ export const API_REGISTRY: Record<string, ApiDefinition> = {
     description: 'Email delivery service',
     category: 'communication',
     defaultEnabled: true,
+    displayName: 'Resend',
+    envVarName: 'RESEND_API_KEY',
+    defaultVersion: '1.1.0'
   },
   mediawiki: {
     name: 'MediaWiki',
@@ -64,6 +83,9 @@ export const API_REGISTRY: Record<string, ApiDefinition> = {
     description: 'Access to Wikipedia and other wiki content',
     category: 'information',
     defaultEnabled: true,
+    displayName: 'MediaWiki',
+    envVarName: 'MEDIAWIKI_API_KEY',
+    defaultVersion: '6.4.1'
   },
   'react-pdf': {
     name: 'React PDF',
@@ -73,6 +95,9 @@ export const API_REGISTRY: Record<string, ApiDefinition> = {
     description: 'PDF generation and rendering',
     category: 'document',
     defaultEnabled: true,
+    displayName: 'React PDF',
+    envVarName: 'REACT_PDF_LICENSE_KEY',
+    defaultVersion: '3.1.12'
   },
   stripe: {
     name: 'Stripe',
@@ -82,6 +107,9 @@ export const API_REGISTRY: Record<string, ApiDefinition> = {
     description: 'Payment processing',
     category: 'payment',
     defaultEnabled: true,
+    displayName: 'Stripe',
+    envVarName: 'STRIPE_SECRET_KEY',
+    defaultVersion: '13.3.0'
   },
   elevenlabs: {
     name: 'ElevenLabs',
@@ -91,7 +119,23 @@ export const API_REGISTRY: Record<string, ApiDefinition> = {
     description: 'Text-to-speech API',
     category: 'media',
     defaultEnabled: true,
+    displayName: 'ElevenLabs',
+    envVarName: 'ELEVENLABS_API_KEY',
+    defaultVersion: '1.1.1'
   },
+  supabase: {
+    name: 'supabase',
+    packageName: '@supabase/supabase-js',
+    packageVersion: '2.39.3',
+    envVar: 'NEXT_PUBLIC_SUPABASE_URL',
+    description: 'Open source Firebase alternative with database, auth, and storage',
+    category: 'auth',
+    defaultEnabled: true,
+    displayName: 'Supabase',
+    envVarName: 'NEXT_PUBLIC_SUPABASE_URL',
+    additionalEnvVars: ['NEXT_PUBLIC_SUPABASE_ANON_KEY'],
+    defaultVersion: '2.39.3'
+  }
 };
 
 // Get all API keys as a type

@@ -1,13 +1,13 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import AuthProvider from '@/components/auth/Provider'
+import { AuthProvider } from '../lib/auth/AuthContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'BH Standard Repository',
-  description: 'A modular Next.js application template',
+  title: 'Next.js Project with Supabase Auth',
+  description: 'A Next.js project template with Supabase Auth integration',
 }
 
 export default function RootLayout({

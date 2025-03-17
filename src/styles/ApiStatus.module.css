@@ -1,0 +1,90 @@
+.apiStatusContainer {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 900px;
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+}
+
+.refreshButton {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.refreshButton:hover {
+  background-color: #3367d6;
+}
+
+.apiTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.apiTable th,
+.apiTable td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.apiTable th {
+  font-weight: 600;
+  color: #4a5568;
+  background-color: #f7fafc;
+}
+
+.apiTable tbody tr:hover {
+  background-color: #f7fafc;
+}
+
+.enabled,
+.disabled,
+.configured,
+.missing {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.enabled {
+  background-color: #c6f6d5;
+  color: #22543d;
+}
+
+.disabled {
+  background-color: #e2e8f0;
+  color: #4a5568;
+}
+
+.configured {
+  background-color: #c6f6d5;
+  color: #22543d;
+}
+
+.missing {
+  background-color: #fed7d7;
+  color: #822727;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+  color: #718096;
+} 

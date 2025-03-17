@@ -38,91 +38,76 @@ This template includes several optional API integrations that can be enabled or 
 
 ## Authentication System
 
-This repository includes a complete email-based authentication system using NextAuth.js, Supabase, and Resend. The system provides:
+This repository includes a complete authentication system built with Supabase Auth:
 
 - Email/password signup and login
-- Email verification
-- Password reset functionality
-- Protected routes
-- Session management
+- User role management (regular users vs admin users)
+- Session handling throughout the app
+- Testing interface for auth functionality
 
-### Authentication Setup
+### Setup Authentication
 
-Follow these steps to set up the authentication system:
+1. Create a Supabase project at [https://app.supabase.io/](https://app.supabase.io/)
+2. Add your Supabase credentials to the environment variables:
 
-1. **Create a Supabase Database**:
-   - Sign up at [Supabase](https://supabase.com/) and create a new project
-   - Use the SQL schema in `src/db/schema.sql` to set up the required tables
-   - Add the Supabase URL and key to your `.env.local` file:
-     ```
-     SUPABASE_URL=your-supabase-url
-     SUPABASE_KEY=your-supabase-key
-     ```
-
-2. **Configure Resend for Email Sending**:
-   - Sign up at [Resend](https://resend.com/) and get your API key
-   - Add the Resend API key to your `.env.local` file:
-     ```
-     RESEND_API_KEY=your-resend-api-key
-     ```
-   - Update the sender email in `src/lib/email/index.ts` to match your verified domain
-
-3. **Set up NextAuth.js**:
-   - Generate a secure random string for the NextAuth secret
-   - Add the following to your `.env.local` file:
-     ```
-     NEXTAUTH_SECRET=your-generated-secret
-     NEXTAUTH_URL=http://localhost:3000 # Change in production
-     ```
-
-### Authentication Routes
-
-The authentication system includes the following routes:
-
-- `/auth/signin` - Sign in page
-- `/auth/signup` - Sign up page
-- `/auth/verify-request` - Verification email sent page
-- `/auth/reset-password` - Password reset page
-- `/auth/forgot-password` - Request password reset page
-- `/auth/error` - Error page for authentication issues
-- `/dashboard` - Example protected route
-
-### Protected Routes
-
-To create a protected route that requires authentication, use the `ProtectedRoute` component:
-
-```tsx
-"use client";
-
-import ProtectedRoute from "@/components/auth/ProtectedRoute";
-
-export default function SecurePage() {
-  return (
-    <ProtectedRoute>
-      <div>
-        This content is only visible to authenticated users
-      </div>
-    </ProtectedRoute>
-  );
-}
+```
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-You can also access the user data in client components using the `useAuth` hook:
+3. Set up the database schema by running the SQL script in `src/app/api/supabase-migrations/profiles.sql`
 
-```tsx
-"use client";
+For detailed instructions, see [Supabase Auth Documentation](./docs/supabase-auth.md)
 
-import { useAuth } from "@/lib/auth/session";
+## API Support
 
-export default function UserProfile() {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  
-  if (isLoading) return <div>Loading...</div>;
-  if (!isAuthenticated) return <div>Not authenticated</div>;
-  
-  return <div>Hello, {user.name || user.email}</div>;
-}
+This template includes support for multiple APIs that can be enabled/disabled as needed:
+
+- OpenAI
+- Anthropic
+- Replicate
+- Stripe
+- Resend
+- Deepgram
+- Wiki.js
+- React PDF
+
+### Adding API Keys
+
+Create a `.env.local` file in the root directory and add your API keys:
+
 ```
+# OpenAI
+OPENAI_API_KEY=your-openai-key
+
+# Anthropic
+ANTHROPIC_API_KEY=your-anthropic-key
+
+# Replicate
+REPLICATE_API_TOKEN=your-replicate-token
+
+# Stripe
+STRIPE_SECRET_KEY=your-stripe-secret-key
+STRIPE_PUBLISHABLE_KEY=your-stripe-publishable-key
+
+# Other APIs...
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+### Configuring APIs
+
+You can enable/disable APIs by editing the API configuration file at `src/config/api-config.ts`.
+
+Alternatively, you can use the GitHub Actions workflow to configure APIs:
+
+1. Go to the Actions tab in your GitHub repository
+2. Select the "Configure APIs" workflow
+3. Click "Run workflow"
+4. Select the APIs you want to enable
+5. Run the workflow
 
 ## Getting Started
 
