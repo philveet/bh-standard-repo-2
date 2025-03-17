@@ -1,6 +1,6 @@
 import { availableApis } from '@/lib/api/core';
 import { IconButton } from '@/components/ui/IconButton';
-import { RefreshCw, Settings } from '@/lib/icons';
+import { RefreshCw } from '@/lib/icons';
 
 interface ApiStatus {
   name: string;
@@ -52,13 +52,6 @@ export default function Home() {
                   size="sm"
                 >
                   Refresh
-                </IconButton>
-                <IconButton 
-                  icon={Settings} 
-                  variant="primary" 
-                  size="sm"
-                >
-                  Configure
                 </IconButton>
               </div>
             </div>
