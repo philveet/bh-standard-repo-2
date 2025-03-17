@@ -35,6 +35,10 @@ on:
         description: 'Include Stripe API'
         type: boolean
         default: false
+      elevenlabs:
+        description: 'Include ElevenLabs API'
+        type: boolean
+        default: false
       remove_unused:
         description: 'Remove unused API code'
         type: boolean
@@ -80,6 +84,9 @@ jobs:
           if [ "${{ github.event.inputs.stripe }}" == "true" ]; then
             APIs="$APIs stripe"
           fi
+          if [ "${{ github.event.inputs.elevenlabs }}" == "true" ]; then
+            APIs="$APIs elevenlabs"
+          fi
           echo "apis=$APIs" >> $GITHUB_OUTPUT
       
       - name: Configure APIs
@@ -111,6 +118,9 @@ jobs:
           fi
           if [ "${{ github.event.inputs.stripe }}" == "true" ]; then
             npm install stripe@13.3.0
+          fi
+          if [ "${{ github.event.inputs.elevenlabs }}" == "true" ]; then
+            npm install elevenlabs-node@1.1.1
           fi
       
       - name: Commit changes

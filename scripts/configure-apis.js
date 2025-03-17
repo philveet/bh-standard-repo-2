@@ -14,7 +14,8 @@ const allApis = [
   'resend', 
   'mediawiki', 
   'react-pdf', 
-  'stripe'
+  'stripe',
+  'elevenlabs'
 ];
 
 // Generate config file
@@ -27,7 +28,8 @@ export type ApiName =
   | 'resend' 
   | 'mediawiki' 
   | 'react-pdf' 
-  | 'stripe';
+  | 'stripe'
+  | 'elevenlabs';
 
 export const ENABLED_APIS: Record<ApiName, boolean> = {
   replicate: ${enabledApis.includes('replicate')},
@@ -37,7 +39,8 @@ export const ENABLED_APIS: Record<ApiName, boolean> = {
   resend: ${enabledApis.includes('resend')},
   mediawiki: ${enabledApis.includes('mediawiki')},
   'react-pdf': ${enabledApis.includes('react-pdf')},
-  stripe: ${enabledApis.includes('stripe')}
+  stripe: ${enabledApis.includes('stripe')},
+  elevenlabs: ${enabledApis.includes('elevenlabs')}
 };
 
 export function isApiEnabled(api: ApiName): boolean {
@@ -77,7 +80,8 @@ const apiPackages = {
   resend: ['resend'],
   mediawiki: ['wikijs'],
   'react-pdf': ['@react-pdf/renderer'],
-  stripe: ['stripe']
+  stripe: ['stripe'],
+  elevenlabs: ['elevenlabs-node']
 };
 
 // Remove disabled API packages
