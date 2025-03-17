@@ -1,16 +1,44 @@
-import { useState } from 'react';
+'use client'
+
+import { useState, useCallback } from 'react';
 import { useAuth } from '../lib/auth/AuthContext';
 import styles from '@/styles/AuthTesting.module.css';
 
 export default function AuthTesting() {
-  const { user, userRole, signUp, signIn, signOut, loading } = useAuth();
+  const { user, userRole, signUp, signIn, signOut, loading, session } = useAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleSignUp(e: React.FormEvent) {
+  // Format date from timestamp
+  const formatExpiryTime = useCallback((expiresAt?: number) => {
+    if (!expiresAt) return 'Unknown';
+    return new Date(expiresAt * 1000).toLocaleString();
+  }, []);
+
+  // Calculate remaining session time
+  const getSessionTimeRemaining = useCallback(() => {
+    if (!session?.expires_at) return 'Unknown';
+    
+    const expiresAt = session.expires_at;
+    const now = Math.floor(Date.now() / 1000);
+    const remainingSeconds = expiresAt - now;
+    
+    if (remainingSeconds <= 0) return 'Expired';
+    
+    const minutes = Math.floor(remainingSeconds / 60);
+    const hours = Math.floor(minutes / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes % 60}m`;
+    }
+    
+    return `${minutes}m ${remainingSeconds % 60}s`;
+  }, [session]);
+
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage('');
@@ -32,9 +60,9 @@ export default function AuthTesting() {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
-  async function handleSignIn(e: React.FormEvent) {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage('');
@@ -56,9 +84,9 @@ export default function AuthTesting() {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
-  async function handleSignOut() {
+  const handleSignOut = async () => {
     setIsLoading(true);
     setMessage('');
     
@@ -77,7 +105,7 @@ export default function AuthTesting() {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className={styles.authContainer}>
@@ -92,6 +120,8 @@ export default function AuthTesting() {
             <p>✅ Logged in as: {user.email}</p>
             <p>User ID: {user.id}</p>
             <p>Role: {userRole || 'Loading role...'}</p>
+            <p>Session expires: {formatExpiryTime(session?.expires_at)}</p>
+            <p>Time remaining: {getSessionTimeRemaining()}</p>
           </div>
         ) : (
           <p>❌ Not logged in</p>

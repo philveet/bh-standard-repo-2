@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * SUPABASE USER MANAGEMENT GUIDE
  * 
@@ -31,9 +33,9 @@
  * in the database since RLS policies prevent users from changing roles.
  */
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
 import { Session, User, AuthError } from '@supabase/supabase-js';
-import { supabase } from '../supabase/client';
+import { getSupabaseClient } from '../supabase/client';
 
 interface AuthContextType {
   session: Session | null;
@@ -53,22 +55,77 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Cache for user roles to reduce database calls
+const userRoleCache = new Map<string, string>();
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Initialize Supabase client only on client side
+  const supabase = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    return getSupabaseClient();
+  }, []);
+
+  // Memoize fetchUserRole to avoid recreating the function on each render
+  const fetchUserRole = useCallback(async (userId: string) => {
+    // Check cache first
+    if (userRoleCache.has(userId)) {
+      setUserRole(userRoleCache.get(userId) || null);
+      return;
+    }
+
+    if (!supabase) return;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .single();
+
+    if (!error && data) {
+      userRoleCache.set(userId, data.role); // Cache the role
+      setUserRole(data.role);
+    }
+  }, [supabase]);
+
+  // Enhanced sign out function to properly clean up state
+  const handleSignOut = useCallback(async () => {
+    if (!supabase) return { error: new Error('Supabase client not initialized') as AuthError };
+    
+    const result = await supabase.auth.signOut();
+    
+    // Clear state on sign out
+    setUser(null);
+    setSession(null);
+    setUserRole(null);
+    
+    return result;
+  }, [supabase]);
+
   useEffect(() => {
+    if (!supabase) return;
+
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchUserRole(session.user.id);
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchUserRole(session.user.id);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    });
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -84,34 +141,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
+    // Implement token refresh logic
+    const refreshInterval = setInterval(async () => {
+      if (session) {
+        try {
+          const { data, error } = await supabase.auth.refreshSession();
+          if (!error && data.session) {
+            setSession(data.session);
+            setUser(data.session.user);
+          }
+        } catch (error) {
+          console.error('Error refreshing session:', error);
+        }
+      }
+    }, 1000 * 60 * 30); // Refresh every 30 minutes
+
     return () => {
+      // Proper cleanup
       subscription.unsubscribe();
+      clearInterval(refreshInterval);
+      setUser(null);
+      setSession(null);
+      setUserRole(null);
     };
-  }, []);
+  }, [supabase, fetchUserRole, session]);
 
-  async function fetchUserRole(userId: string) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single();
-
-    if (!error && data) {
-      setUserRole(data.role);
-    }
-  }
-
-  const value = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
     session,
     user,
     userRole,
     loading,
     signUp: (email: string, password: string) => 
-      supabase.auth.signUp({ email, password }),
+      supabase ? supabase.auth.signUp({ email, password }) :
+      Promise.resolve({ error: new Error('Supabase client not initialized') as AuthError, data: null }),
     signIn: (email: string, password: string) => 
-      supabase.auth.signInWithPassword({ email, password }),
-    signOut: () => supabase.auth.signOut(),
-  };
+      supabase ? supabase.auth.signInWithPassword({ email, password }) :
+      Promise.resolve({ error: new Error('Supabase client not initialized') as AuthError, data: null }),
+    signOut: handleSignOut,
+  }), [session, user, userRole, loading, supabase, handleSignOut]);
 
   return (
     <AuthContext.Provider value={value}>

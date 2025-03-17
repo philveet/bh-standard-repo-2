@@ -1,4 +1,4 @@
-import { availableApis } from './core';
+import { apiRegistry, getApiStatuses } from './core';
 import { ApiKeys } from './core/api-keys';
 import { ENABLED_APIS } from '@/config/api-config';
 
@@ -9,63 +9,44 @@ export type ApiStatusType = {
   hasCredentials: boolean;
 };
 
-const API_VERSIONS: Record<string, string> = {
-  openai: '4.6.0',
-  anthropic: '0.7.1',
-  replicate: '0.18.0',
-  stripe: '13.3.0',
-  resend: '1.1.0',
-  deepgram: '2.4.0',
-  supabase: '2.39.3',
-  wikijs: '6.4.1',
-  reactpdf: '3.1.12'
-};
+/**
+ * Safely check if credentials exist without actually importing the client
+ * This helps avoid loading Node.js modules in the browser
+ */
+function safeHasCredentials(apiName: string): boolean {
+  // If we're in the browser, just check basic environment variable existence
+  if (typeof window !== 'undefined') {
+    switch (apiName) {
+      case 'openai':
+        return !!process.env.OPENAI_API_KEY;
+      case 'anthropic':
+        return !!process.env.ANTHROPIC_API_KEY;
+      case 'replicate':
+        return !!process.env.REPLICATE_API_TOKEN;
+      case 'stripe':
+        return !!process.env.STRIPE_SECRET_KEY;
+      case 'resend':
+        return !!process.env.RESEND_API_KEY;
+      case 'deepgram':
+        return !!process.env.DEEPGRAM_API_KEY;
+      case 'supabase':
+        return !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      case 'elevenlabs':
+        return !!process.env.ELEVENLABS_API_KEY;
+      default:
+        return false;
+    }
+  }
+  
+  // On the server, we can use the more detailed check
+  return ApiKeys.hasRequiredKeys(apiName);
+}
 
 /**
  * Get status information for all APIs
  * @returns Promise that resolves to an array of API status objects
  */
 export async function getApiStatus(): Promise<ApiStatusType[]> {
-  // Get API statuses and format them for display
-  return Object.entries(availableApis).map(([apiName, api]) => {
-    const isEnabled = ENABLED_APIS[apiName as keyof typeof ENABLED_APIS] || false;
-    const hasCredentials = ApiKeys.hasRequiredKeys(apiName);
-    
-    return {
-      name: formatApiName(apiName),
-      version: API_VERSIONS[apiName] || 'Unknown',
-      isEnabled,
-      hasCredentials
-    };
-  });
-}
-
-/**
- * Format API name for display
- * @param apiName Raw API name
- * @returns Formatted API name
- */
-function formatApiName(apiName: string): string {
-  switch (apiName) {
-    case 'openai':
-      return 'OpenAI';
-    case 'anthropic':
-      return 'Anthropic';
-    case 'replicate':
-      return 'Replicate';
-    case 'stripe':
-      return 'Stripe';
-    case 'resend':
-      return 'Resend';
-    case 'deepgram':
-      return 'Deepgram';
-    case 'supabase':
-      return 'Supabase';
-    case 'wikijs':
-      return 'Wiki.js';
-    case 'reactpdf':
-      return 'React PDF';
-    default:
-      return apiName.charAt(0).toUpperCase() + apiName.slice(1);
-  }
+  // Forward to the core implementation
+  return getApiStatuses();
 } 

@@ -8,9 +8,10 @@ import { getResendClient } from '@/lib/api/resend';
 import { getWikiClient } from '@/lib/api/mediawiki';
 import { checkPdfEnabled } from '@/lib/api/react-pdf';
 import { getStripeClient } from '@/lib/api/stripe';
+import { ApiKeys } from './api-keys';
 
 // Central registry of all available APIs
-export const availableApis = {
+export const apiRegistry = {
   openai: {
     isEnabled: () => isApiEnabled('openai'),
     getClient: getOpenAIClient,
@@ -52,9 +53,96 @@ export const availableApis = {
   },
 };
 
-// Helper function to get all currently enabled APIs
-export function getEnabledApis() {
-  return Object.entries(availableApis)
+// Helper function to get all currently enabled APIs - renamed to avoid conflicts
+export function getActiveApis() {
+  return Object.entries(apiRegistry)
     .filter(([_, api]) => api.isEnabled())
     .map(([name]) => name);
+}
+
+// For backward compatibility
+export const availableApis = apiRegistry;
+
+type ApiStatus = {
+  name: string;
+  version: string;
+  isEnabled: boolean;
+  hasCredentials: boolean;
+};
+
+/**
+ * Get status of all available APIs
+ * @returns Array of API status objects
+ */
+export async function getApiStatuses(): Promise<ApiStatus[]> {
+  const enabledApis = getActiveApis();
+  
+  return Object.entries(apiRegistry).map(([apiName, api]) => {
+    const isEnabled = enabledApis.includes(apiName);
+    const hasCredentials = ApiKeys.hasRequiredKeys(apiName);
+    
+    // Format API name for display
+    const formattedName = formatApiName(apiName);
+    
+    return {
+      name: formattedName,
+      version: getApiVersion(apiName),
+      isEnabled,
+      hasCredentials
+    };
+  });
+}
+
+/**
+ * Get version of an API
+ * @param apiName Name of the API
+ * @returns Version string
+ */
+function getApiVersion(apiName: string): string {
+  const versionMap: Record<string, string> = {
+    openai: '4.6.0',
+    anthropic: '0.7.1',
+    replicate: '0.18.0',
+    stripe: '13.3.0',
+    resend: '1.1.0',
+    deepgram: '2.4.0',
+    supabase: '2.39.3',
+    mediawiki: '6.4.1',
+    'react-pdf': '3.1.12',
+    elevenlabs: '1.1.0'
+  };
+  
+  return versionMap[apiName] || 'N/A';
+}
+
+/**
+ * Format API name for display
+ * @param apiName Raw API name
+ * @returns Formatted API name
+ */
+function formatApiName(apiName: string): string {
+  switch (apiName) {
+    case 'openai':
+      return 'OpenAI';
+    case 'anthropic':
+      return 'Anthropic';
+    case 'replicate':
+      return 'Replicate';
+    case 'stripe':
+      return 'Stripe';
+    case 'resend':
+      return 'Resend';
+    case 'deepgram':
+      return 'Deepgram';
+    case 'supabase':
+      return 'Supabase';
+    case 'mediawiki':
+      return 'Wiki.js';
+    case 'react-pdf':
+      return 'React PDF';
+    case 'elevenlabs':
+      return 'ElevenLabs';
+    default:
+      return apiName.charAt(0).toUpperCase() + apiName.slice(1);
+  }
 } 

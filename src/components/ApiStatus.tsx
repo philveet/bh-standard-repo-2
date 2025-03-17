@@ -1,22 +1,22 @@
+'use client'
+
 import { useState, useEffect } from 'react';
 import styles from '@/styles/ApiStatus.module.css';
-import { getApiStatus } from '@/lib/api/status';
+import { getApiStatusDynamic } from '@/lib/api/status-dynamic';
 
-type ApiStatusType = {
-  name: string;
-  version: string;
-  isEnabled: boolean;
-  hasCredentials: boolean;
-};
+// Import types only, not implementations
+import type { ApiStatusType } from '@/lib/api/status';
 
 export function ApiStatus() {
   const [apiStatuses, setApiStatuses] = useState<ApiStatusType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Use dynamic imports to avoid Node.js module issues on client side
   useEffect(() => {
     async function fetchApiStatus() {
       try {
-        const statuses = await getApiStatus();
+        // Use the dynamic import wrapper
+        const statuses = await getApiStatusDynamic();
         setApiStatuses(statuses);
       } catch (error) {
         console.error('Failed to fetch API statuses:', error);
@@ -31,7 +31,7 @@ export function ApiStatus() {
   function handleRefresh() {
     setIsLoading(true);
     setApiStatuses([]);
-    getApiStatus().then((statuses: ApiStatusType[]) => {
+    getApiStatusDynamic().then((statuses) => {
       setApiStatuses(statuses);
       setIsLoading(false);
     }).catch((error: Error) => {

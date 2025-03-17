@@ -1,5 +1,6 @@
 /**
  * Utility class for checking API key availability
+ * Browser-safe implementation that doesn't rely on Node.js modules
  */
 export class ApiKeys {
   /**
@@ -24,6 +25,12 @@ export class ApiKeys {
         return !!process.env.DEEPGRAM_API_KEY;
       case 'supabase':
         return !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      case 'elevenlabs':
+        return !!process.env.ELEVENLABS_API_KEY;
+      case 'mediawiki':
+        return true; // No API key required for public access
+      case 'react-pdf':
+        return true; // No API key required by default
       default:
         return false;
     }
