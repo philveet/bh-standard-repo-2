@@ -86,8 +86,32 @@ jobs:
         run: |
           node scripts/configure-apis.js ${{ steps.prepare.outputs.apis }}
       
-      - name: Install dependencies
-        run: npm install
+      - name: Update package.json with fixed versions
+        run: |
+          if [ "${{ github.event.inputs.replicate }}" == "true" ]; then
+            npm install replicate@0.18.0
+          fi
+          if [ "${{ github.event.inputs.anthropic }}" == "true" ]; then
+            npm install @anthropic-ai/sdk@0.7.1
+          fi
+          if [ "${{ github.event.inputs.openai }}" == "true" ]; then
+            npm install openai@4.6.0
+          fi
+          if [ "${{ github.event.inputs.deepgram }}" == "true" ]; then
+            npm install @deepgram/sdk@2.4.0
+          fi
+          if [ "${{ github.event.inputs.resend }}" == "true" ]; then
+            npm install resend@1.1.0
+          fi
+          if [ "${{ github.event.inputs.mediawiki }}" == "true" ]; then
+            npm install wikijs@6.4.1
+          fi
+          if [ "${{ github.event.inputs.react-pdf }}" == "true" ]; then
+            npm install @react-pdf/renderer@3.1.12
+          fi
+          if [ "${{ github.event.inputs.stripe }}" == "true" ]; then
+            npm install stripe@13.3.0
+          fi
       
       - name: Commit changes
         run: |
