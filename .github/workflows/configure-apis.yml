@@ -28,7 +28,7 @@ on:
         type: boolean
         default: false
       react-pdf:
-        description: 'Include react-pdf API'
+        description: 'Include React PDF API'
         type: boolean
         default: false
       stripe:
@@ -129,4 +129,4 @@ jobs:
           git config --local user.name "GitHub Action"
           git add .
           git commit -m "Configure with selected APIs: ${{ steps.prepare.outputs.apis }}"
-          git push 
+          git push

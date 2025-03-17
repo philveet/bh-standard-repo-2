@@ -1,32 +1,27 @@
-// List of available APIs that can be enabled/disabled
-export type ApiName = 
-  | 'replicate' 
-  | 'anthropic' 
-  | 'openai' 
-  | 'deepgram' 
-  | 'resend' 
-  | 'mediawiki' 
-  | 'react-pdf' 
-  | 'stripe'
-  | 'elevenlabs';
+import { ApiName, API_REGISTRY, ApiEnabledState } from './api-registry';
 
-// By default all APIs are enabled
-// This can be overridden in environment variables
-export const ENABLED_APIS: Record<ApiName, boolean> = {
-  replicate: true,
-  anthropic: true,
-  openai: true,
-  deepgram: true,
-  resend: true,
-  mediawiki: true,
-  'react-pdf': true,
-  stripe: true,
-  elevenlabs: true
-};
+// Export ApiName type for use in other files
+export type { ApiName };
+
+// Default configuration based on registry defaults
+export const ENABLED_APIS: ApiEnabledState = Object.entries(API_REGISTRY).reduce(
+  (acc, [key, definition]) => {
+    acc[key as ApiName] = definition.defaultEnabled;
+    return acc;
+  },
+  {} as ApiEnabledState
+);
 
 /**
  * Checks if a specific API is enabled for this project
  */
 export function isApiEnabled(api: ApiName): boolean {
   return ENABLED_APIS[api];
+}
+
+/**
+ * Gets environment variable name for a specific API
+ */
+export function getApiEnvVar(api: ApiName): string {
+  return API_REGISTRY[api].envVar;
 } 
