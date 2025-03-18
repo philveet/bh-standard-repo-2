@@ -39,8 +39,8 @@ const nextConfig = {
     }
     return config;
   },
-  // Add experimental settings to force transpilation of dependencies
-  transpilePackages: ['@deepgram/sdk', 'node-fetch', 'wikijs', 'openai'],
+  // Add experimental settings to force transpilation of dependencies that are used client-side
+  transpilePackages: ['node-fetch'],
   
   // Disable TypeScript type checking to avoid errors with mock clients
   typescript: {
@@ -56,6 +56,7 @@ const nextConfig = {
   // Explicitly configure which routes are dynamic
   // This helps with the standalone output mode
   experimental: {
+    // List server-only packages here
     serverComponentsExternalPackages: [
       '@supabase/supabase-js',
       '@deepgram/sdk',
