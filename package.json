@@ -47,6 +47,7 @@
     "build": "npx --no-install next build",
     "start": "npx --no-install next start",
     "lint": "npx --no-install next lint",
+    "clean": "rm -rf .next && rm -rf node_modules/.cache",
     "configure-apis": "node scripts/configure-apis.js"
   }
 }

@@ -2,6 +2,16 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  // Improve static file handling
+  poweredByHeader: true,
+  compress: true,
+  // Ensure strict image settings
+  images: {
+    unoptimized: false,
+    domains: [],
+    remotePatterns: [],
+  },
+  generateEtags: true, // Enable etags for caching
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Make Node.js modules noop for client-side
@@ -36,6 +46,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  
+  // Added for better static file handling
+  staticPageGenerationTimeout: 120,
+  output: 'standalone',
 };
 
 module.exports = nextConfig;
