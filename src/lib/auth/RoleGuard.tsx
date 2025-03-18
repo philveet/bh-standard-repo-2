@@ -22,7 +22,7 @@ interface RoleGuardProps {
 export function RoleGuard({ 
   children, 
   allowedRoles,
-  fallback = <div>Access denied. You don't have permission to view this content.</div>,
+  fallback = <div>Access denied. You don&apos;t have permission to view this content.</div>,
   redirectTo
 }: RoleGuardProps) {
   const { userRole, loading, user } = useAuth();
