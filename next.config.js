@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
+  swcMinify: true,
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Make Node.js modules noop for client-side
