@@ -1,0 +1,115 @@
+.chatContainer {
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  background-color: var(--color-bg-primary);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.messagesContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.message {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--spacing-md);
+  max-width: 80%;
+  word-break: break-word;
+}
+
+.userMessage {
+  composes: message;
+  align-self: flex-end;
+  background-color: var(--color-primary);
+  color: var(--color-text-inverted);
+}
+
+.aiMessage {
+  composes: message;
+  align-self: flex-start;
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.inputContainer {
+  display: flex;
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--color-bg-tertiary);
+  background-color: var(--color-bg-secondary);
+}
+
+.messageInput {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-bg-tertiary);
+  border-radius: var(--spacing-xs);
+  font-size: 14px;
+  margin-right: var(--spacing-sm);
+}
+
+.sendButton {
+  background-color: var(--color-primary);
+  color: var(--color-text-inverted);
+  border: none;
+  border-radius: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.sendButton:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.sendButton:disabled {
+  background-color: var(--color-bg-tertiary);
+  cursor: not-allowed;
+}
+
+.statusContainer {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--border-radius);
+  font-size: 14px;
+}
+
+.status {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xs);
+}
+
+.statusLabel {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.statusValue {
+  color: var(--color-text-primary);
+}
+
+.loadingIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--spacing-md);
+  color: var(--color-text-secondary);
+}
+
+.error {
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--color-error);
+} 
