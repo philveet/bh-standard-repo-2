@@ -47,6 +47,8 @@ export default function OpenAITestPage() {
     setError(null);
     
     try {
+      console.log('Sending request to OpenAI test API...');
+      
       // Send request to API
       const response = await fetch('/api/test/openai', {
         method: 'POST',
@@ -56,20 +58,32 @@ export default function OpenAITestPage() {
         body: JSON.stringify({ message: input }),
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to get response');
+      // Read response body as text first for debugging
+      const responseText = await response.text();
+      console.log('API Response text:', responseText);
+      
+      // Try to parse as JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Error parsing response as JSON:', parseError);
+        throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}...`);
       }
       
-      const data: ResponseData = await response.json();
+      if (!response.ok) {
+        const errorMessage = data.error || 'Unknown error';
+        const errorDetails = data.details || '';
+        throw new Error(`${errorMessage}${errorDetails ? ': ' + errorDetails : ''}`);
+      }
       
       // Add AI response to chat
       const aiMessage: Message = { role: 'assistant', content: data.reply };
       setMessages(prevMessages => [...prevMessages, aiMessage]);
       setResponseData(data);
     } catch (err: any) {
-      setError(err.message || 'An error occurred while communicating with OpenAI');
       console.error('Error in OpenAI chat:', err);
+      setError(err.message || 'An error occurred while communicating with OpenAI');
     } finally {
       setIsLoading(false);
     }
