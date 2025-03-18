@@ -45,7 +45,7 @@ function ApiStatusFallback() {
       </div>
       <div className={styles.fallbackInfo}>
         <h3>API Status Summary</h3>
-        <p>Supabase Auth: <span className={styles.missing}>Not Configured</span></p>
+        <p>API Status: <span className={styles.disabled}>Unavailable</span></p>
       </div>
     </div>
   );
@@ -133,7 +133,6 @@ function ApiStatusContent() {
               <th>API</th>
               <th>Version</th>
               <th>Status</th>
-              <th>Credentials</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -145,11 +144,6 @@ function ApiStatusContent() {
                 <td>
                   <span className={api.isEnabled ? styles.enabled : styles.disabled}>
                     {api.isEnabled ? 'Enabled' : 'Disabled'}
-                  </span>
-                </td>
-                <td>
-                  <span className={api.hasCredentials ? styles.configured : styles.missing}>
-                    {api.hasCredentials ? 'Configured' : 'Missing'}
                   </span>
                 </td>
                 <td>
