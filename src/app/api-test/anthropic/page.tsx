@@ -1,0 +1,171 @@
+'use client';
+
+import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import styles from '@/styles/ApiTest.module.css';
+import chatStyles from '@/styles/OpenAITest.module.css';
+
+type Message = {
+  role: 'user' | 'assistant';
+  content: string;
+};
+
+type ResponseData = {
+  reply: string;
+  model: string;
+  usage: {
+    input_tokens: number;
+    output_tokens: number;
+    total_tokens: number;
+  };
+};
+
+export default function AnthropicTestPage() {
+  const router = useRouter();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [responseData, setResponseData] = useState<ResponseData | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to the bottom of messages when new messages are added
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!input.trim() || isLoading) return;
+    
+    // Add user message to chat
+    const userMessage: Message = { role: 'user', content: input };
+    setMessages([...messages, userMessage]);
+    setInput('');
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      console.log('Sending request to Anthropic test API...');
+      
+      // Send request to API
+      const response = await fetch('/api/test/anthropic', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: input }),
+      });
+      
+      // Read response body as text first for debugging
+      const responseText = await response.text();
+      console.log('API Response text:', responseText);
+      
+      // Try to parse as JSON
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Error parsing response as JSON:', parseError);
+        throw new Error(`Invalid JSON response: ${responseText.substring(0, 100)}...`);
+      }
+      
+      if (!response.ok) {
+        const errorMessage = data.error || 'Unknown error';
+        const errorDetails = data.details || '';
+        throw new Error(`${errorMessage}${errorDetails ? ': ' + errorDetails : ''}`);
+      }
+      
+      // Add AI response to chat
+      const aiMessage: Message = { role: 'assistant', content: data.reply };
+      setMessages(prevMessages => [...prevMessages, aiMessage]);
+      setResponseData(data);
+    } catch (err: any) {
+      console.error('Error in Anthropic chat:', err);
+      setError(err.message || 'An error occurred while communicating with Anthropic');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className={styles.container}>
+      <header className={styles.header}>
+        <button 
+          onClick={() => router.push('/')} 
+          className={styles.backButton}
+        >
+          ← Back to API Panel
+        </button>
+      </header>
+      <main className={styles.main}>
+        <h1 className={styles.title}>Live test for Anthropic</h1>
+        
+        <div className={chatStyles.chatContainer}>
+          <div className={chatStyles.messagesContainer}>
+            {messages.map((message, index) => (
+              <div 
+                key={index} 
+                className={message.role === 'user' ? chatStyles.userMessage : chatStyles.aiMessage}
+              >
+                {message.content}
+              </div>
+            ))}
+            {isLoading && (
+              <div className={chatStyles.loadingIndicator}>
+                Waiting for response from Claude...
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+          
+          <form onSubmit={handleSendMessage} className={chatStyles.inputContainer}>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type a message to test Anthropic's Claude..."
+              className={chatStyles.messageInput}
+              disabled={isLoading}
+            />
+            <button
+              type="submit"
+              className={chatStyles.sendButton}
+              disabled={isLoading || !input.trim()}
+            >
+              Send
+            </button>
+          </form>
+        </div>
+        
+        {error && (
+          <div className={chatStyles.error}>
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+        
+        {responseData && (
+          <div className={chatStyles.statusContainer}>
+            <div className={chatStyles.status}>
+              <span className={chatStyles.statusLabel}>Model:</span>
+              <span className={chatStyles.statusValue}>{responseData.model}</span>
+            </div>
+            <div className={chatStyles.status}>
+              <span className={chatStyles.statusLabel}>Input Tokens:</span>
+              <span className={chatStyles.statusValue}>{responseData.usage.input_tokens}</span>
+            </div>
+            <div className={chatStyles.status}>
+              <span className={chatStyles.statusLabel}>Output Tokens:</span>
+              <span className={chatStyles.statusValue}>{responseData.usage.output_tokens}</span>
+            </div>
+            <div className={chatStyles.status}>
+              <span className={chatStyles.statusLabel}>Total Tokens:</span>
+              <span className={chatStyles.statusValue}>{responseData.usage.total_tokens}</span>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+} 
