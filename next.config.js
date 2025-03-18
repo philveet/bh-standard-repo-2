@@ -47,8 +47,22 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   
-  // Timeout for static page generation
+  // Timeout for static page generation (in milliseconds)
   staticPageGenerationTimeout: 120,
+  
+  // For optimal Vercel deployment
+  output: 'standalone',
+  
+  // Explicitly configure which routes are dynamic
+  // This helps with the standalone output mode
+  experimental: {
+    serverComponentsExternalPackages: [
+      '@supabase/supabase-js',
+      '@deepgram/sdk',
+      'wikijs',
+      'openai'
+    ],
+  },
 };
 
 module.exports = nextConfig;

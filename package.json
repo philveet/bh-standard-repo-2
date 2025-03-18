@@ -26,6 +26,7 @@
     "resend": "^2.0.0",
     "stable-diffusion-api": "^0.0.7",
     "stripe": "^13.3.0",
+    "styled-jsx": "^5.1.6",
     "tailwindcss": "^3.4.1",
     "wikijs": "^6.4.1"
   },
@@ -47,9 +48,7 @@
     "build": "npx --no-install next build",
     "start": "npx --no-install next start",
     "lint": "npx --no-install next lint",
-    "clean": "rm -rf .next && rm -rf node_modules/.cache && rm -rf out",
-    "export": "next export",
-    "deploy": "next build && touch out/.nojekyll && git add out/ && git commit -m \"Deploy to gh-pages\" && git subtree push --prefix out origin gh-pages",
+    "clean": "rm -rf .next && rm -rf node_modules/.cache",
     "configure-apis": "node scripts/configure-apis.js"
   }
 }
