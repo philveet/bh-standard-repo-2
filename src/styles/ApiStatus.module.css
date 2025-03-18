@@ -27,6 +27,24 @@
   background-color: var(--color-primary-dark);
 }
 
+.testButton {
+  display: inline-block;
+  background-color: var(--color-primary);
+  color: var(--color-text-inverted);
+  border: none;
+  border-radius: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.testButton:hover {
+  background-color: var(--color-primary-dark);
+}
+
 .apiTable {
   width: 100%;
   border-collapse: collapse;

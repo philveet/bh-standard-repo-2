@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, Component, ReactNode } from 'react';
+import Link from 'next/link';
 import styles from '@/styles/ApiStatus.module.css';
 import { getApiStatusDynamic } from '@/lib/api/status-dynamic';
 
@@ -133,6 +134,7 @@ function ApiStatusContent() {
               <th>Version</th>
               <th>Status</th>
               <th>Credentials</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -149,6 +151,14 @@ function ApiStatusContent() {
                   <span className={api.hasCredentials ? styles.configured : styles.missing}>
                     {api.hasCredentials ? 'Configured' : 'Missing'}
                   </span>
+                </td>
+                <td>
+                  <Link 
+                    href={`/api-test/${api.name.toLowerCase()}`}
+                    className={styles.testButton}
+                  >
+                    Test API
+                  </Link>
                 </td>
               </tr>
             ))}
