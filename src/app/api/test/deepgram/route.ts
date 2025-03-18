@@ -120,32 +120,42 @@ export async function POST(request: Request) {
     const duration = (endTime - startTime) / 1000; // duration in seconds
     
     console.log('Response received from Deepgram API');
-    console.log('Response:', JSON.stringify(response));
     
-    // Check if it's an error response first
-    if ('error' in response) {
-      throw new Error(`Deepgram API error: ${response.error}`);
-    }
-    
-    // Safely extract transcript and metadata from the result
-    // The latest SDK has different response structure
-    const transcriptResult = response.result || {};
-    const transcript = transcriptResult.channels?.[0]?.alternatives?.[0]?.transcript || '';
-    
-    // Get confidence score and other useful metadata
-    const confidence = transcriptResult.channels?.[0]?.alternatives?.[0]?.confidence || 0;
-    const words = transcriptResult.channels?.[0]?.alternatives?.[0]?.words || [];
-    
-    // Handle metadata - may be in different locations based on SDK version
+    // Extract transcript and metadata safely based on the SDK response structure
+    // The Deepgram SDK returns a complex object with the result property
+    let transcript = '';
+    let confidence = 0;
+    let words: any[] = [];
     let audioLength = 0;
     let modelName = 'nova-2';
     
-    if (transcriptResult.metadata) {
-      audioLength = transcriptResult.metadata.duration || 0;
-      modelName = transcriptResult.metadata.model || 'nova-2';
+    // Handle the response based on the Deepgram SDK structure
+    if (response && typeof response === 'object') {
+      // First check if it's an error response
+      if ('error' in response) {
+        throw new Error(`Deepgram API error: ${(response as any).error}`);
+      }
+      
+      // Access the results as per the Deepgram API response structure
+      if ('results' in response) {
+        const results = (response as any).results;
+        transcript = results?.channels?.[0]?.alternatives?.[0]?.transcript || '';
+        confidence = results?.channels?.[0]?.alternatives?.[0]?.confidence || 0;
+        words = results?.channels?.[0]?.alternatives?.[0]?.words || [];
+        audioLength = results?.metadata?.duration || 0;
+        modelName = results?.metadata?.model || 'nova-2';
+      } else if ('result' in response) {
+        // Alternative structure in some versions
+        const result = (response as any).result;
+        transcript = result?.channels?.[0]?.alternatives?.[0]?.transcript || '';
+        confidence = result?.channels?.[0]?.alternatives?.[0]?.confidence || 0;
+        words = result?.channels?.[0]?.alternatives?.[0]?.words || [];
+        audioLength = result?.metadata?.duration || 0;
+        modelName = result?.metadata?.model || 'nova-2';
+      }
     }
     
-    // Return the response
+    // Return the processed response
     return NextResponse.json({
       transcript,
       confidence,
