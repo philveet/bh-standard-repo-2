@@ -13,6 +13,41 @@ This guide follows a strict **complete replacement** philosophy. We will be taki
 - **UI Source**: The app with the beautiful UI you want to use (polymet-app)
 - **Functional Base**: The app with the functionality you want to keep
 
+### For Complex UI Projects
+
+For larger Polymet projects with extensive UI components:
+
+```bash
+# IMPORTANT: No matter how complex the UI Source, follow these rules:
+# 1. ONLY copy UI-related directories (NEVER copy logic, API, or data fetching code)
+# 2. Create ALL necessary directories before copying files
+# 3. Maintain the EXACT same directory structure for UI components
+
+# For complex directory structures, identify all UI directories first:
+UI_DIRECTORIES=(
+  "src/components"
+  "src/app/(components)"
+  "src/ui"
+  "src/layouts"
+  "src/styles"
+  "src/themes"
+  "src/animations"
+  "src/icons"
+  "src/fonts"
+  # Add any other purely visual UI directories
+)
+
+# Create each directory and copy UI components
+for dir in "${UI_DIRECTORIES[@]}"; do
+  if [ -d "polymet-app/$dir" ]; then
+    mkdir -p "$dir"
+    cp -r "polymet-app/$dir"/* "$dir"/
+  fi
+done
+```
+
+**REMEMBER**: Copy ONLY UI elements. Never copy business logic, APIs, authentication, or data processing code.
+
 ## 2. FILE REPLACEMENT PHASE
 
 Follow these steps IN ORDER. The goal is to completely replace the UI.
@@ -116,41 +151,6 @@ Typical locations to check:
 - Feature descriptions
 - Testimonials
 - Any component that contains text with apostrophes
-
-### Step 8: Handling Complex UI Projects
-
-For larger Polymet projects with extensive UI components:
-
-```bash
-# IMPORTANT: No matter how complex the UI Source, follow these rules:
-# 1. ONLY copy UI-related directories (NEVER copy logic, API, or data fetching code)
-# 2. Create ALL necessary directories before copying files
-# 3. Maintain the EXACT same directory structure for UI components
-
-# For complex directory structures, identify all UI directories first:
-UI_DIRECTORIES=(
-  "src/components"
-  "src/app/(components)"
-  "src/ui"
-  "src/layouts"
-  "src/styles"
-  "src/themes"
-  "src/animations"
-  "src/icons"
-  "src/fonts"
-  # Add any other purely visual UI directories
-)
-
-# Create each directory and copy UI components
-for dir in "${UI_DIRECTORIES[@]}"; do
-  if [ -d "polymet-app/$dir" ]; then
-    mkdir -p "$dir"
-    cp -r "polymet-app/$dir"/* "$dir"/
-  fi
-done
-```
-
-**REMEMBER**: Copy ONLY UI elements. Never copy business logic, APIs, authentication, or data processing code.
 
 ## 3. DEPLOY TO VERIFY UI
 
