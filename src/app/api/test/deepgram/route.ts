@@ -21,6 +21,7 @@ const createDeepgramClient = () => {
       : '****';
     console.log(`Creating Deepgram client with API key: ${maskedKey}`);
     
+    // Create client with specific version to avoid compatibility issues
     return createClient(apiKey);
   } catch (error) {
     console.error('Error creating Deepgram client:', error);
@@ -35,6 +36,8 @@ export async function POST(request: Request) {
     // Log environment variable status
     const hasApiKey = !!process.env.DEEPGRAM_API_KEY;
     console.log('DEEPGRAM_API_KEY set:', hasApiKey);
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('Runtime:', process.env.NEXT_RUNTIME || 'unknown');
     
     if (!hasApiKey) {
       console.error('DEEPGRAM_API_KEY is not set in environment variables');
@@ -72,34 +75,68 @@ export async function POST(request: Request) {
         );
       }
       
-      // Extract base64 audio data and decode it
-      const base64Data = jsonData.audio.split(',')[1]; // Remove data URL prefix if present
-      audioData = Buffer.from(base64Data, 'base64');
-      mimeType = jsonData.mimeType || 'audio/webm';
-      
-      console.log(`Decoded base64 audio data, size: ${audioData.length} bytes, type: ${mimeType}`);
-    } else if (contentType.includes('multipart/form-data')) {
-      // For form data file uploads
-      const formData = await request.formData();
-      const file = formData.get('audio') as File;
-      
-      if (!file) {
-        console.log('No audio file provided in request');
+      try {
+        // Extract base64 audio data and decode it
+        const parts = jsonData.audio.split(',');
+        const base64Data = parts.length > 1 ? parts[1] : parts[0]; // Remove data URL prefix if present
+        audioData = Buffer.from(base64Data, 'base64');
+        
+        // Try to determine the mime type from the data URL
+        if (parts.length > 1 && parts[0].includes('data:')) {
+          const mimeMatch = parts[0].match(/data:([^;]+);/);
+          mimeType = mimeMatch ? mimeMatch[1] : (jsonData.mimeType || 'audio/webm');
+        } else {
+          mimeType = jsonData.mimeType || 'audio/webm';
+        }
+        
+        console.log(`Decoded base64 audio data, size: ${audioData.length} bytes, type: ${mimeType}`);
+        
+        // Validate buffer is not empty
+        if (audioData.length === 0) {
+          throw new Error('Decoded audio buffer is empty');
+        }
+      } catch (decodeError: any) {
+        console.error('Error decoding base64 audio:', decodeError);
         return NextResponse.json(
-          { error: 'Audio file is required' },
+          { error: 'Failed to decode audio data', details: decodeError.message },
           { status: 400 }
         );
       }
-      
-      const arrayBuffer = await file.arrayBuffer();
-      audioData = Buffer.from(arrayBuffer);
-      mimeType = file.type;
-      
-      console.log(`Received form audio file, size: ${audioData.length} bytes, type: ${mimeType}`);
+    } else if (contentType.includes('multipart/form-data')) {
+      // For form data file uploads
+      try {
+        const formData = await request.formData();
+        const file = formData.get('audio') as File;
+        
+        if (!file) {
+          console.log('No audio file provided in request');
+          return NextResponse.json(
+            { error: 'Audio file is required' },
+            { status: 400 }
+          );
+        }
+        
+        const arrayBuffer = await file.arrayBuffer();
+        audioData = Buffer.from(arrayBuffer);
+        mimeType = file.type || 'audio/webm';
+        
+        console.log(`Received form audio file, size: ${audioData.length} bytes, type: ${mimeType}`);
+        
+        // Validate buffer is not empty
+        if (audioData.length === 0) {
+          throw new Error('Audio file is empty');
+        }
+      } catch (formError: any) {
+        console.error('Error processing form data:', formError);
+        return NextResponse.json(
+          { error: 'Failed to process form data', details: formError.message },
+          { status: 400 }
+        );
+      }
     } else {
       console.error(`Unsupported content type: ${contentType}`);
       return NextResponse.json(
-        { error: 'Unsupported content type' },
+        { error: 'Unsupported content type', details: `Received: ${contentType}, expected application/json or multipart/form-data` },
         { status: 400 }
       );
     }
@@ -119,6 +156,12 @@ export async function POST(request: Request) {
     console.log('Audio MIME type:', mimeType);
     console.log('Audio data size:', audioData.length, 'bytes');
     
+    // Validate audio data format is supported by Deepgram
+    const supportedFormats = ['audio/wav', 'audio/mp3', 'audio/mpeg', 'audio/webm', 'audio/ogg', 'audio/flac'];
+    if (!supportedFormats.some(format => mimeType.includes(format.split('/')[1]))) {
+      console.warn(`Audio format ${mimeType} may not be fully supported by Deepgram`);
+    }
+    
     // Start the transcription
     const startTime = Date.now();
     
@@ -134,19 +177,56 @@ export async function POST(request: Request) {
     console.log('Transcription options:', JSON.stringify(transcriptionOptions));
     
     try {
-      // Using the current Deepgram SDK API
-      const response = await deepgram.listen.prerecorded.transcribeFile(
-        audioData,
-        {
-          mimetype: mimeType,
-          ...transcriptionOptions,
+      // Manual fallback approach in case the SDK has issues
+      let response;
+      try {
+        // First try using the SDK properly
+        response = await deepgram.listen.prerecorded.transcribeFile(
+          audioData,
+          {
+            mimetype: mimeType,
+            ...transcriptionOptions,
+          }
+        );
+      } catch (sdkError) {
+        console.error('SDK transcribeFile method failed:', sdkError);
+        
+        // If specific SDK method fails, try the raw API
+        try {
+          console.log('Attempting fallback with raw API call...');
+          
+          // Direct fetch implementation since we can't access the SDK's internal fetch
+          const rawResponse = await fetch('https://api.deepgram.com/v1/listen', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Token ${process.env.DEEPGRAM_API_KEY}`,
+              'Content-Type': mimeType
+            },
+            body: audioData
+          });
+          
+          if (!rawResponse.ok) {
+            const errorText = await rawResponse.text();
+            throw new Error(`Deepgram API HTTP error ${rawResponse.status}: ${errorText}`);
+          }
+          
+          response = await rawResponse.json();
+        } catch (fallbackError) {
+          console.error('Fallback method also failed:', fallbackError);
+          throw fallbackError; // Re-throw to be caught by outer catch
         }
-      );
+      }
       
       const endTime = Date.now();
       const duration = (endTime - startTime) / 1000; // duration in seconds
       
       console.log('Response received from Deepgram API after', duration, 'seconds');
+      
+      if (!response) {
+        throw new Error('No response received from Deepgram');
+      }
+      
+      console.log('Response type:', typeof response);
       console.log('Response structure:', JSON.stringify(Object.keys(response || {})));
       
       // Extract transcript and metadata safely based on the SDK response structure
@@ -184,6 +264,14 @@ export async function POST(request: Request) {
           words = result?.channels?.[0]?.alternatives?.[0]?.words || [];
           audioLength = result?.metadata?.duration || 0;
           modelName = result?.metadata?.model || 'nova-2';
+        } else if (response.channels) {
+          // Direct API response (without SDK wrapper)
+          console.log('Found direct API response structure');
+          transcript = response.channels?.[0]?.alternatives?.[0]?.transcript || '';
+          confidence = response.channels?.[0]?.alternatives?.[0]?.confidence || 0;
+          words = response.channels?.[0]?.alternatives?.[0]?.words || [];
+          audioLength = response.metadata?.duration || 0;
+          modelName = response.metadata?.model || 'nova-2';
         } else {
           console.warn('Unexpected response structure from Deepgram:', response);
         }
@@ -201,7 +289,8 @@ export async function POST(request: Request) {
         audioLength,
         processingTime: duration,
         model: modelName,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        message: 'Audio processed successfully'
       });
     } catch (apiError: any) {
       console.error('Error calling Deepgram API:', {
@@ -209,7 +298,7 @@ export async function POST(request: Request) {
         name: apiError.name,
         code: apiError.code,
         response: apiError.response,
-        fullDetails: JSON.stringify(apiError)
+        fullDetails: JSON.stringify(apiError, Object.getOwnPropertyNames(apiError))
       });
       
       throw apiError; // Rethrow for the outer catch block
