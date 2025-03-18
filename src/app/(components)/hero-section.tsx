@@ -16,7 +16,7 @@ export function HeroSection() {
           className="text-xl text-gray-600 dark:text-gray-400 mb-8"
         >
           This space will soon be transformed into an amazing web application.
-          We're working hard to bring you something special.
+          We&apos;re working hard to bring you something special.
         </p>
         <div className="flex justify-center space-x-4">
           <button

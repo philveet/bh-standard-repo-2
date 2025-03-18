@@ -18,7 +18,7 @@ export default function Home() {
           <p
             className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
           >
-            This space will soon be filled with amazing functionality. Here's
+            This space will soon be filled with amazing functionality. Here&apos;s
             what you can expect:
           </p>
         </div>
