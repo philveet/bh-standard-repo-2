@@ -1,6 +1,6 @@
 'use client'
 
-import { getSupabaseClient } from '../supabase/client';
+import { getSupabaseClient } from '../clients/supabase/client';
 
 /**
  * Make an authenticated API request with the current user's session token

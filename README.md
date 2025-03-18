@@ -25,6 +25,33 @@ A Next.js template repository with integrated API support and enhanced authentic
 - **Lucide React**: 0.436.0 (Icon library)
 - **tailwind-animate**: Added for enhanced animations
 
+## Project Structure
+
+The codebase follows a logical organization to keep related functionality grouped together:
+
+```
+src/
+├── app/                  # Next.js App Router structure
+├── components/           # Shared React components
+├── config/               # Application configuration
+├── lib/                  # Library code
+│   ├── api/              # API implementation code
+│   ├── auth/             # Authentication and authorization
+│   ├── clients/          # External service clients
+│   │   ├── supabase/     # Supabase client
+│   │   └── upstash/      # Upstash Redis client
+│   └── utils/            # General utilities
+└── types/                # Shared TypeScript type definitions
+```
+
+### Key Directories
+
+- **api/**: Contains API implementations for each supported service (OpenAI, Anthropic, etc.)
+- **auth/**: Authentication system built with Supabase
+- **clients/**: External service client configurations (Supabase, Upstash)
+- **utils/**: General utility functions
+- **types/**: Shared TypeScript type definitions
+
 ## Recent Updates
 
 - Updated Next.js to 14.2.25 with improved bundling and performance
@@ -33,6 +60,7 @@ A Next.js template repository with integrated API support and enhanced authentic
 - Updated all major dependencies to their latest versions
 - Added webpack polyfills for cross-environment compatibility
 - Enhanced error handling in API wrapper modules
+- Reorganized project structure for better maintainability
 
 ## Optional APIs
 

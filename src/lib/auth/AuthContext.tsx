@@ -35,7 +35,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
 import { Session, User, AuthError } from '@supabase/supabase-js';
-import { getSupabaseClient, isSupabaseCredentialsMissing } from '../supabase/client';
+import { getSupabaseClient, isSupabaseCredentialsMissing } from '../clients/supabase/client';
 
 interface AuthContextType {
   session: Session | null;

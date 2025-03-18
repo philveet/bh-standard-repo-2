@@ -2,7 +2,7 @@
  * Utility class to check if API keys are configured
  * Browser-safe implementation that doesn't rely on Node.js modules
  */
-import { isSupabaseCredentialsMissing } from '@/lib/supabase/client';
+import { isSupabaseCredentialsMissing } from '@/lib/clients/supabase/client';
 
 export class ApiKeys {
   /**

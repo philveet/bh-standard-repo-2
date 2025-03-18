@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseClient } from '@/lib/supabase/client';
+import { getSupabaseClient } from '@/lib/clients/supabase/client';
 
 /**
  * Auth callback handler for Supabase
