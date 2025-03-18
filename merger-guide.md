@@ -117,6 +117,41 @@ Typical locations to check:
 - Testimonials
 - Any component that contains text with apostrophes
 
+### Step 8: Handling Complex UI Projects
+
+For larger Polymet projects with extensive UI components:
+
+```bash
+# IMPORTANT: No matter how complex the UI Source, follow these rules:
+# 1. ONLY copy UI-related directories (NEVER copy logic, API, or data fetching code)
+# 2. Create ALL necessary directories before copying files
+# 3. Maintain the EXACT same directory structure for UI components
+
+# For complex directory structures, identify all UI directories first:
+UI_DIRECTORIES=(
+  "src/components"
+  "src/app/(components)"
+  "src/ui"
+  "src/layouts"
+  "src/styles"
+  "src/themes"
+  "src/animations"
+  "src/icons"
+  "src/fonts"
+  # Add any other purely visual UI directories
+)
+
+# Create each directory and copy UI components
+for dir in "${UI_DIRECTORIES[@]}"; do
+  if [ -d "polymet-app/$dir" ]; then
+    mkdir -p "$dir"
+    cp -r "polymet-app/$dir"/* "$dir"/
+  fi
+done
+```
+
+**REMEMBER**: Copy ONLY UI elements. Never copy business logic, APIs, authentication, or data processing code.
+
 ## 3. DEPLOY TO VERIFY UI
 
 **IMPORTANT**: Always ask the user for explicit permission before deploying to Vercel or any production environment.
@@ -134,6 +169,7 @@ If the UI does not match exactly, STOP and revisit steps 1-7.
 - ❌ **DO NOT** keep original page structures and try to style them
 - ❌ **DO NOT** cherry-pick only some UI components
 - ❌ **DO NOT** forget to update path aliases in tsconfig.json - these are critical for imports to work
+- ❌ **DO NOT** copy any business logic, API calls, authentication, or data fetching from the UI Source
 
 ## 5. TROUBLESHOOTING
 
