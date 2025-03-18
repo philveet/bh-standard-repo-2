@@ -9,33 +9,44 @@ A Next.js template repository with integrated API support and enhanced authentic
 - Configurable API selection via GitHub workflow
 - Enhanced Supabase Authentication system with user roles
 - API status display
+- Hydration-safe components with two-phase rendering
 
 ## Core Technologies
 
-- **Next.js**: 13.4.19
+- **Next.js**: 14.2.25 (Updated from 13.4.19)
 - **React**: 18.2.0
-- **TypeScript**: 5.1.6
-- **TailwindCSS**: 3.3.3
-- **ESLint**: 8.48.0
+- **TypeScript**: 5.4.2 (Updated from 5.1.6)
+- **TailwindCSS**: 3.4.1 (Updated from 3.3.3)
+- **ESLint**: 8.57.0 (Updated from 8.48.0)
 - **Prettier**: 3.0.3
-- **Supabase**: 2.33.1 (Database)
+- **Supabase**: 2.39.8 (Updated from 2.33.1)
 - **Upstash Redis**: 1.22.0 (Caching)
-- **NextAuth.js**: 4.23.1 (Authentication)
+- **NextAuth.js**: 4.24.5 (Updated from 4.23.1)
 - **Lucide React**: 0.436.0 (Icon library)
+- **tailwind-animate**: Added for enhanced animations
+
+## Recent Updates
+
+- Updated Next.js to 14.2.25 with improved bundling and performance
+- Fixed hydration issues using a two-phase rendering approach
+- Implemented browser-safe API clients with proper client/server detection
+- Updated all major dependencies to their latest versions
+- Added webpack polyfills for cross-environment compatibility
+- Enhanced error handling in API wrapper modules
 
 ## Optional APIs
 
 This template includes several optional API integrations that can be enabled or disabled based on your needs:
 
 ### AI & Machine Learning
-- **OpenAI**: 4.6.0 - Text generation and completions
+- **OpenAI**: 4.28.4 (Updated from 4.6.0) - Text generation and completions
 - **Anthropic**: 0.36.3 - Claude AI models
-- **Replicate**: 0.18.0 - Access to open-source AI models for images, audio, and more
-- **ElevenLabs**: 1.1.1 - Text-to-speech API
+- **Replicate**: 0.25.2 (Updated from 0.18.0) - Access to open-source AI models for images, audio, and more
+- **ElevenLabs**: 1.1.0 - Text-to-speech API
 
 ### Media & Communication
-- **Deepgram**: 2.4.0 - Speech-to-text transcription
-- **Resend**: 1.1.0 - Email delivery service
+- **Deepgram**: 3.11.2 (Updated from 2.4.0) - Speech-to-text transcription
+- **Resend**: 2.0.0 (Updated from 1.1.0) - Email delivery service
 
 ### Documentation & Payments
 - **React PDF**: 3.1.12 - PDF generation and rendering
