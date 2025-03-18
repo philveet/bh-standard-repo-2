@@ -5,9 +5,14 @@ const nextConfig = {
   // Improve static file handling
   poweredByHeader: true,
   compress: true,
+  // GitHub Pages configuration
+  output: 'export',
+  distDir: 'out',
+  // Handle GitHub Pages path prefix
+  basePath: process.env.NODE_ENV === 'production' ? '/bh-standard-repo' : '',
   // Ensure strict image settings
   images: {
-    unoptimized: false,
+    unoptimized: true,
     domains: [],
     remotePatterns: [],
   },
@@ -49,7 +54,6 @@ const nextConfig = {
   
   // Added for better static file handling
   staticPageGenerationTimeout: 120,
-  output: 'standalone',
 };
 
 module.exports = nextConfig;

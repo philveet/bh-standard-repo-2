@@ -47,7 +47,9 @@
     "build": "npx --no-install next build",
     "start": "npx --no-install next start",
     "lint": "npx --no-install next lint",
-    "clean": "rm -rf .next && rm -rf node_modules/.cache",
+    "clean": "rm -rf .next && rm -rf node_modules/.cache && rm -rf out",
+    "export": "next export",
+    "deploy": "next build && touch out/.nojekyll && git add out/ && git commit -m \"Deploy to gh-pages\" && git subtree push --prefix out origin gh-pages",
     "configure-apis": "node scripts/configure-apis.js"
   }
 }
