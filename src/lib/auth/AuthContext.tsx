@@ -35,13 +35,14 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from 'react';
 import { Session, User, AuthError } from '@supabase/supabase-js';
-import { getSupabaseClient } from '../supabase/client';
+import { getSupabaseClient, isSupabaseCredentialsMissing } from '../supabase/client';
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   userRole: string | null;
   loading: boolean;
+  credentialsMissing: boolean;
   signUp: (email: string, password: string) => Promise<{
     error: AuthError | null;
     data: { user: User | null } | null;
@@ -63,10 +64,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [credentialsMissing, setCredentialsMissing] = useState(false);
 
   // Initialize Supabase client only on client side
   const supabase = useMemo(() => {
     if (typeof window === 'undefined') return null;
+    
+    // Check if Supabase credentials are missing
+    const missing = isSupabaseCredentialsMissing();
+    setCredentialsMissing(missing);
+    
     return getSupabaseClient();
   }, []);
 
@@ -108,6 +115,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!supabase) return;
+    
+    // If credentials are missing, don't attempt to initialize auth
+    if (credentialsMissing) {
+      setLoading(false);
+      return;
+    }
 
     // Get initial session
     const initializeAuth = async () => {
@@ -164,7 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(null);
       setUserRole(null);
     };
-  }, [supabase, fetchUserRole, session]);
+  }, [supabase, fetchUserRole, session, credentialsMissing]);
 
   // Memoize the context value to prevent unnecessary re-renders
   const value = useMemo(() => ({
@@ -172,6 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     userRole,
     loading,
+    credentialsMissing,
     signUp: (email: string, password: string) => 
       supabase ? supabase.auth.signUp({ email, password }) :
       Promise.resolve({ error: new Error('Supabase client not initialized') as AuthError, data: null }),
@@ -179,7 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase ? supabase.auth.signInWithPassword({ email, password }) :
       Promise.resolve({ error: new Error('Supabase client not initialized') as AuthError, data: null }),
     signOut: handleSignOut,
-  }), [session, user, userRole, loading, supabase, handleSignOut]);
+  }), [session, user, userRole, loading, credentialsMissing, supabase, handleSignOut]);
 
   return (
     <AuthContext.Provider value={value}>

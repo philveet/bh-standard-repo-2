@@ -53,7 +53,7 @@ export const apiRegistry = {
   },
 };
 
-// Helper function to get all currently enabled APIs - renamed to avoid conflicts
+// Helper function to get all currently enabled APIs
 export function getActiveApis() {
   return Object.entries(apiRegistry)
     .filter(([_, api]) => api.isEnabled())
@@ -75,22 +75,39 @@ type ApiStatus = {
  * @returns Array of API status objects
  */
 export async function getApiStatuses(): Promise<ApiStatus[]> {
-  const enabledApis = getActiveApis();
-  
-  return Object.entries(apiRegistry).map(([apiName, api]) => {
-    const isEnabled = enabledApis.includes(apiName);
-    const hasCredentials = ApiKeys.hasRequiredKeys(apiName);
+  try {
+    const enabledApis = getActiveApis();
     
-    // Format API name for display
-    const formattedName = formatApiName(apiName);
-    
-    return {
-      name: formattedName,
-      version: getApiVersion(apiName),
-      isEnabled,
-      hasCredentials
-    };
-  });
+    return Object.entries(apiRegistry).map(([apiName, api]) => {
+      try {
+        const isEnabled = enabledApis.includes(apiName);
+        const hasCredentials = ApiKeys.hasRequiredKeys(apiName);
+        
+        // Format API name for display
+        const formattedName = formatApiName(apiName);
+        
+        return {
+          name: formattedName,
+          version: getApiVersion(apiName),
+          isEnabled,
+          hasCredentials
+        };
+      } catch (error) {
+        console.error(`Error getting status for API ${apiName}:`, error);
+        // Return a placeholder status for the API that failed
+        return {
+          name: formatApiName(apiName),
+          version: 'Error',
+          isEnabled: false,
+          hasCredentials: false
+        };
+      }
+    });
+  } catch (error) {
+    console.error("Error getting API statuses:", error);
+    // Return empty array in case of error
+    return [];
+  }
 }
 
 /**
@@ -100,13 +117,13 @@ export async function getApiStatuses(): Promise<ApiStatus[]> {
  */
 function getApiVersion(apiName: string): string {
   const versionMap: Record<string, string> = {
-    openai: '4.6.0',
-    anthropic: '0.7.1',
-    replicate: '0.18.0',
+    openai: '4.28.4',
+    anthropic: '0.36.3',
+    replicate: '0.25.2',
     stripe: '13.3.0',
-    resend: '1.1.0',
-    deepgram: '2.4.0',
-    supabase: '2.39.3',
+    resend: '2.0.0',
+    deepgram: '3.11.2',
+    supabase: '2.39.8',
     mediawiki: '6.4.1',
     'react-pdf': '3.1.12',
     elevenlabs: '1.1.0'

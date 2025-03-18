@@ -1,11 +1,58 @@
 'use client'
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../lib/auth/AuthContext';
 import styles from '@/styles/AuthTesting.module.css';
 
 export default function AuthTesting() {
-  const { user, userRole, signUp, signIn, signOut, loading, session } = useAuth();
+  // Track client-side rendering
+  const [mounted, setMounted] = useState(false);
+  
+  // Ensure component is fully mounted before rendering any dynamic content
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  // If not mounted yet, render a placeholder with the exact same DOM structure
+  // This ensures server and client renders match exactly
+  if (!mounted) {
+    return <AuthTestingPlaceholder />;
+  }
+  
+  // Only render the actual component on the client side
+  return <AuthTestingContent />;
+}
+
+// Placeholder with the same DOM structure but static content
+function AuthTestingPlaceholder() {
+  return (
+    <div className={styles.authContainer}>
+      <h2>Authentication Testing</h2>
+      <div className={styles.authStatus}>
+        <h3>Current Status</h3>
+        <p>Loading authentication status...</p>
+      </div>
+      <div className={styles.authForms}>
+        <form className={styles.authForm}>
+          <h3>Sign Up</h3>
+          <input type="email" placeholder="Email" disabled />
+          <input type="password" placeholder="Password" disabled />
+          <button type="button" disabled>Sign Up</button>
+        </form>
+        <form className={styles.authForm}>
+          <h3>Log In</h3>
+          <input type="email" placeholder="Email" disabled />
+          <input type="password" placeholder="Password" disabled />
+          <button type="button" disabled>Log In</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// Actual content component only rendered client-side
+function AuthTestingContent() {
+  const { user, userRole, signUp, signIn, signOut, loading, session, credentialsMissing } = useAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,6 +87,11 @@ export default function AuthTesting() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (credentialsMissing) {
+      setMessage('Supabase credentials not configured. Authentication is disabled.');
+      return;
+    }
+    
     setIsLoading(true);
     setMessage('');
     
@@ -64,6 +116,11 @@ export default function AuthTesting() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (credentialsMissing) {
+      setMessage('Supabase credentials not configured. Authentication is disabled.');
+      return;
+    }
+    
     setIsLoading(true);
     setMessage('');
     
@@ -87,6 +144,11 @@ export default function AuthTesting() {
   };
 
   const handleSignOut = async () => {
+    if (credentialsMissing) {
+      setMessage('Supabase credentials not configured. Authentication is disabled.');
+      return;
+    }
+    
     setIsLoading(true);
     setMessage('');
     
@@ -107,9 +169,83 @@ export default function AuthTesting() {
     }
   };
 
+  // Prep login form elements
+  const renderAuthForms = () => (
+    <div className={styles.authForms}>
+      <form onSubmit={handleSignUp} className={styles.authForm}>
+        <h3>Sign Up</h3>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          disabled={credentialsMissing || isLoading}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          minLength={6}
+          disabled={credentialsMissing || isLoading}
+        />
+        <button type="submit" disabled={credentialsMissing || isLoading}>
+          {isLoading ? 'Processing...' : 'Sign Up'}
+        </button>
+      </form>
+
+      <form onSubmit={handleSignIn} className={styles.authForm}>
+        <h3>Log In</h3>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          disabled={credentialsMissing || isLoading}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          disabled={credentialsMissing || isLoading}
+        />
+        <button type="submit" disabled={credentialsMissing || isLoading}>
+          {isLoading ? 'Processing...' : 'Log In'}
+        </button>
+      </form>
+    </div>
+  );
+
+  // Prep sign out button
+  const renderSignOutButton = () => (
+    <div className={styles.signOutContainer}>
+      <button onClick={handleSignOut} disabled={isLoading}>
+        {isLoading ? 'Processing...' : 'Log Out'}
+      </button>
+    </div>
+  );
+
   return (
     <div className={styles.authContainer}>
       <h2>Authentication Testing</h2>
+      
+      {credentialsMissing && (
+        <div className={`${styles.message} ${styles.warning}`}>
+          <p>
+            <strong>Login and registration are disabled</strong>
+            <br />
+            Supabase environment variables not configured
+          </p>
+          <p className={styles.smallText}>
+            Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.
+          </p>
+        </div>
+      )}
       
       <div className={styles.authStatus}>
         <h3>Current Status</h3>
@@ -134,58 +270,7 @@ export default function AuthTesting() {
         </div>
       )}
 
-      {!user ? (
-        <div className={styles.authForms}>
-          <form onSubmit={handleSignUp} className={styles.authForm}>
-            <h3>Sign Up</h3>
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-            />
-            <button type="submit" disabled={isLoading}>
-              {isLoading ? 'Processing...' : 'Sign Up'}
-            </button>
-          </form>
-
-          <form onSubmit={handleSignIn} className={styles.authForm}>
-            <h3>Log In</h3>
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <button type="submit" disabled={isLoading}>
-              {isLoading ? 'Processing...' : 'Log In'}
-            </button>
-          </form>
-        </div>
-      ) : (
-        <div className={styles.signOutContainer}>
-          <button onClick={handleSignOut} disabled={isLoading}>
-            {isLoading ? 'Processing...' : 'Log Out'}
-          </button>
-        </div>
-      )}
+      {user ? renderSignOutButton() : renderAuthForms()}
     </div>
   );
 } 

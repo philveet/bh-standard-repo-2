@@ -33,6 +33,18 @@
   border-left: 4px solid #2e7d32;
 }
 
+.warning {
+  background-color: #fff8e1;
+  color: #f57c00;
+  border-left: 4px solid #f57c00;
+}
+
+.smallText {
+  font-size: 0.85rem;
+  margin-top: 5px;
+  opacity: 0.8;
+}
+
 .authForms {
   display: flex;
   gap: 20px;

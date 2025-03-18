@@ -1,15 +1,18 @@
 /**
- * Utility class for checking API key availability
+ * Utility class to check if API keys are configured
  * Browser-safe implementation that doesn't rely on Node.js modules
  */
+import { isSupabaseCredentialsMissing } from '@/lib/supabase/client';
+
 export class ApiKeys {
   /**
-   * Check if the required API keys are set for a given API
+   * Check if required API keys are set for a given API
    * @param apiName The name of the API to check
-   * @returns True if all required keys are available
+   * @returns boolean indicating if the API has all required keys
    */
   static hasRequiredKeys(apiName: string): boolean {
-    // Simple implementation - can be extended with more detailed checks
+    // In browser environments, we check for environment variables
+    // without actually trying to access the APIs
     switch (apiName) {
       case 'openai':
         return !!process.env.OPENAI_API_KEY;
@@ -18,19 +21,20 @@ export class ApiKeys {
       case 'replicate':
         return !!process.env.REPLICATE_API_TOKEN;
       case 'stripe':
-        return !!process.env.STRIPE_SECRET_KEY && !!process.env.STRIPE_PUBLISHABLE_KEY;
+        return !!process.env.STRIPE_SECRET_KEY;
       case 'resend':
         return !!process.env.RESEND_API_KEY;
       case 'deepgram':
         return !!process.env.DEEPGRAM_API_KEY;
       case 'supabase':
-        return !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        // Use the specialized function that checks if credentials are missing
+        return !isSupabaseCredentialsMissing();
       case 'elevenlabs':
         return !!process.env.ELEVENLABS_API_KEY;
-      case 'mediawiki':
-        return true; // No API key required for public access
       case 'react-pdf':
-        return true; // No API key required by default
+        return true; // React PDF doesn't require API keys
+      case 'mediawiki':
+        return true; // MediaWiki uses public APIs by default
       default:
         return false;
     }

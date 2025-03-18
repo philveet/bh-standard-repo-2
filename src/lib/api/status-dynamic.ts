@@ -13,6 +13,27 @@ export async function getApiStatusDynamic(): Promise<ApiStatusType[]> {
     return statusModule.getApiStatus();
   } catch (error) {
     console.error('Error importing API status module:', error);
-    return [];
+    
+    // Fallback API status data if the import fails
+    return [
+      {
+        name: 'Supabase',
+        version: 'N/A',
+        isEnabled: false,
+        hasCredentials: false
+      },
+      {
+        name: 'OpenAI',
+        version: 'N/A',
+        isEnabled: false,
+        hasCredentials: false
+      },
+      {
+        name: 'Other APIs',
+        version: 'N/A',
+        isEnabled: false,
+        hasCredentials: false
+      }
+    ];
   }
 } 
