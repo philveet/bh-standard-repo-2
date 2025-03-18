@@ -304,12 +304,28 @@ This project includes Vercel-specific optimizations:
 
 ### Setting Environment Variables on Vercel
 
-When deploying to Vercel, you need to set up all required environment variables from `.env.example` in the Vercel dashboard:
+When deploying to Vercel, you need to set up all required environment variables in the Vercel dashboard:
 
 1. Go to your project settings in Vercel
 2. Navigate to the "Environment Variables" tab
 3. Add all required environment variables
 4. For sensitive API keys, use Vercel's encrypted environment variables
+
+A template file with all required variables is provided at `.env.production.template`. **Do not** use this file directly on Vercel. Instead, manually copy the variable names to your Vercel project's Environment Variables section.
+
+#### Required Variables
+
+At minimum, these variables must be set for a functioning production deployment:
+
+```
+NODE_ENV=production
+AUTH_SECRET=your-generated-secret
+NEXTAUTH_SECRET=your-generated-secret
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+All other variables are optional and only needed for specific API integrations.
 
 ### Troubleshooting Vercel Deployment
 
