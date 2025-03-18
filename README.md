@@ -268,6 +268,8 @@ STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
 
 The easiest way to deploy this application is with [Vercel](https://vercel.com), the platform created by the creators of Next.js.
 
+### Deploying to Vercel
+
 1. Create an account on [Vercel](https://vercel.com/signup)
 2. Install the Vercel CLI:
    ```bash
@@ -280,7 +282,43 @@ The easiest way to deploy this application is with [Vercel](https://vercel.com),
 4. Follow the prompts to set up and deploy your project
 5. Set up environment variables in the Vercel dashboard
 
-Alternatively, you can connect your GitHub repository to Vercel for automatic deployments.
+Alternatively, you can connect your GitHub repository to Vercel for automatic deployments:
+
+1. Push your code to GitHub
+2. Import your repository on Vercel
+3. Vercel will automatically detect that you're using Next.js
+4. Configure your environment variables in the Vercel dashboard
+5. Deploy your application
+
+### Optimizing for Vercel Deployment
+
+This project includes Vercel-specific optimizations:
+
+- `vercel.json` configuration file for deployment settings
+- Proper dynamic route handling with `export const dynamic = 'force-dynamic'` for API routes that use cookies or URL information
+- Next.js Image component for optimized image loading
+- Appropriate `next.config.js` settings for Vercel deployment with `output: 'standalone'`
+- External packages configuration for server components
+- Security headers and region configuration
+- `.env.production` file template for production environment variables
+
+### Setting Environment Variables on Vercel
+
+When deploying to Vercel, you need to set up all required environment variables from `.env.example` in the Vercel dashboard:
+
+1. Go to your project settings in Vercel
+2. Navigate to the "Environment Variables" tab
+3. Add all required environment variables
+4. For sensitive API keys, use Vercel's encrypted environment variables
+
+### Troubleshooting Vercel Deployment
+
+If you encounter issues with your Vercel deployment:
+
+1. Ensure all dynamic API routes are marked with `export const dynamic = 'force-dynamic'`
+2. Check that all required environment variables are properly set in the Vercel dashboard
+3. Verify your `next.config.js` includes necessary server component external packages
+4. Review Vercel build logs for specific error messages
 
 ## License
 
