@@ -1,16 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@deepgram/sdk';
 
+// Route segment config
 export const dynamic = 'force-dynamic';
-
-// Increase the body size limit for audio files (default is 4mb)
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb',
-    },
-  },
-};
+export const runtime = 'nodejs';
+export const maxDuration = 60; // Set max duration to 60 seconds for processing larger audio files
 
 // Direct Deepgram client instantiation for testing
 const createDeepgramClient = () => {
