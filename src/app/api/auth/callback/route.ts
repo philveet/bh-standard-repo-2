@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/clients/supabase/client';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 /**
  * Auth callback handler for Supabase
  * Handles OAuth redirects and email confirmation redirects

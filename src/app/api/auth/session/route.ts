@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/clients/supabase/client';
 import { cookies } from 'next/headers';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 /**
  * API route to get the current user session
  * This provides a centralized endpoint for validating sessions
