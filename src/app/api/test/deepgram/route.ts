@@ -15,6 +15,12 @@ const createDeepgramClient = () => {
   }
   
   try {
+    // Log a masked version of the API key for debugging (only first 4 and last 4 chars)
+    const maskedKey = apiKey.length > 8 
+      ? `${apiKey.slice(0, 4)}...${apiKey.slice(-4)}` 
+      : '****';
+    console.log(`Creating Deepgram client with API key: ${maskedKey}`);
+    
     return createClient(apiKey);
   } catch (error) {
     console.error('Error creating Deepgram client:', error);
@@ -26,11 +32,21 @@ export async function POST(request: Request) {
   console.log('Deepgram test API route called');
   
   try {
-    // Log environment variable status (without exposing the actual key)
-    console.log('DEEPGRAM_API_KEY set:', !!process.env.DEEPGRAM_API_KEY);
+    // Log environment variable status
+    const hasApiKey = !!process.env.DEEPGRAM_API_KEY;
+    console.log('DEEPGRAM_API_KEY set:', hasApiKey);
+    
+    if (!hasApiKey) {
+      console.error('DEEPGRAM_API_KEY is not set in environment variables');
+      return NextResponse.json(
+        { error: 'Deepgram API not configured', details: 'API key missing' },
+        { status: 500 }
+      );
+    }
     
     // Get content type to determine how to handle the request
     const contentType = request.headers.get('content-type') || '';
+    console.log('Request content type:', contentType);
     
     let audioData: Buffer;
     let mimeType: string;
@@ -47,10 +63,21 @@ export async function POST(request: Request) {
         );
       }
       
+      // Check if audio data is a base64 string
+      if (typeof jsonData.audio !== 'string' || !jsonData.audio.includes('base64')) {
+        console.error('Invalid audio data format, expected base64 string');
+        return NextResponse.json(
+          { error: 'Invalid audio data format', details: 'Expected base64 encoded audio' },
+          { status: 400 }
+        );
+      }
+      
       // Extract base64 audio data and decode it
       const base64Data = jsonData.audio.split(',')[1]; // Remove data URL prefix if present
       audioData = Buffer.from(base64Data, 'base64');
       mimeType = jsonData.mimeType || 'audio/webm';
+      
+      console.log(`Decoded base64 audio data, size: ${audioData.length} bytes, type: ${mimeType}`);
     } else if (contentType.includes('multipart/form-data')) {
       // For form data file uploads
       const formData = await request.formData();
@@ -67,7 +94,10 @@ export async function POST(request: Request) {
       const arrayBuffer = await file.arrayBuffer();
       audioData = Buffer.from(arrayBuffer);
       mimeType = file.type;
+      
+      console.log(`Received form audio file, size: ${audioData.length} bytes, type: ${mimeType}`);
     } else {
+      console.error(`Unsupported content type: ${contentType}`);
       return NextResponse.json(
         { error: 'Unsupported content type' },
         { status: 400 }
@@ -101,81 +131,124 @@ export async function POST(request: Request) {
       filler_words: false
     };
     
-    // Using the current Deepgram SDK API
-    const response = await deepgram.listen.prerecorded.transcribeFile(
-      audioData,
-      {
-        mimetype: mimeType,
-        ...transcriptionOptions,
-      }
-    );
+    console.log('Transcription options:', JSON.stringify(transcriptionOptions));
     
-    const endTime = Date.now();
-    const duration = (endTime - startTime) / 1000; // duration in seconds
-    
-    console.log('Response received from Deepgram API');
-    
-    // Extract transcript and metadata safely based on the SDK response structure
-    // The Deepgram SDK returns a complex object with the result property
-    let transcript = '';
-    let confidence = 0;
-    let words: any[] = [];
-    let audioLength = 0;
-    let modelName = 'nova-2';
-    
-    // Handle the response based on the Deepgram SDK structure
-    if (response && typeof response === 'object') {
-      // First check if it's an error response
-      if ('error' in response) {
-        throw new Error(`Deepgram API error: ${(response as any).error}`);
+    try {
+      // Using the current Deepgram SDK API
+      const response = await deepgram.listen.prerecorded.transcribeFile(
+        audioData,
+        {
+          mimetype: mimeType,
+          ...transcriptionOptions,
+        }
+      );
+      
+      const endTime = Date.now();
+      const duration = (endTime - startTime) / 1000; // duration in seconds
+      
+      console.log('Response received from Deepgram API after', duration, 'seconds');
+      console.log('Response structure:', JSON.stringify(Object.keys(response || {})));
+      
+      // Extract transcript and metadata safely based on the SDK response structure
+      // The Deepgram SDK returns a complex object with the result property
+      let transcript = '';
+      let confidence = 0;
+      let words: any[] = [];
+      let audioLength = 0;
+      let modelName = 'nova-2';
+      
+      // Handle the response based on the Deepgram SDK structure
+      if (response && typeof response === 'object') {
+        // First check if it's an error response
+        if ('error' in response) {
+          throw new Error(`Deepgram API error: ${JSON.stringify((response as any).error)}`);
+        }
+        
+        // Try to extract the response data, logging details along the way
+        console.log('Response keys:', Object.keys(response));
+        
+        // Access the results as per the Deepgram API response structure
+        if ('results' in response) {
+          console.log('Found results structure in response');
+          const results = (response as any).results;
+          transcript = results?.channels?.[0]?.alternatives?.[0]?.transcript || '';
+          confidence = results?.channels?.[0]?.alternatives?.[0]?.confidence || 0;
+          words = results?.channels?.[0]?.alternatives?.[0]?.words || [];
+          audioLength = results?.metadata?.duration || 0;
+          modelName = results?.metadata?.model || 'nova-2';
+        } else if ('result' in response) {
+          console.log('Found result structure in response');
+          const result = (response as any).result;
+          transcript = result?.channels?.[0]?.alternatives?.[0]?.transcript || '';
+          confidence = result?.channels?.[0]?.alternatives?.[0]?.confidence || 0;
+          words = result?.channels?.[0]?.alternatives?.[0]?.words || [];
+          audioLength = result?.metadata?.duration || 0;
+          modelName = result?.metadata?.model || 'nova-2';
+        } else {
+          console.warn('Unexpected response structure from Deepgram:', response);
+        }
+      } else {
+        console.warn('Response is not an object or is null:', response);
       }
       
-      // Access the results as per the Deepgram API response structure
-      if ('results' in response) {
-        const results = (response as any).results;
-        transcript = results?.channels?.[0]?.alternatives?.[0]?.transcript || '';
-        confidence = results?.channels?.[0]?.alternatives?.[0]?.confidence || 0;
-        words = results?.channels?.[0]?.alternatives?.[0]?.words || [];
-        audioLength = results?.metadata?.duration || 0;
-        modelName = results?.metadata?.model || 'nova-2';
-      } else if ('result' in response) {
-        // Alternative structure in some versions
-        const result = (response as any).result;
-        transcript = result?.channels?.[0]?.alternatives?.[0]?.transcript || '';
-        confidence = result?.channels?.[0]?.alternatives?.[0]?.confidence || 0;
-        words = result?.channels?.[0]?.alternatives?.[0]?.words || [];
-        audioLength = result?.metadata?.duration || 0;
-        modelName = result?.metadata?.model || 'nova-2';
-      }
+      console.log('Extracted transcript:', transcript ? transcript.substring(0, 50) + '...' : '(empty)');
+      
+      // Return the processed response
+      return NextResponse.json({
+        transcript,
+        confidence,
+        words,
+        audioLength,
+        processingTime: duration,
+        model: modelName,
+        timestamp: new Date().toISOString()
+      });
+    } catch (apiError: any) {
+      console.error('Error calling Deepgram API:', {
+        message: apiError.message,
+        name: apiError.name,
+        code: apiError.code,
+        response: apiError.response,
+        fullDetails: JSON.stringify(apiError)
+      });
+      
+      throw apiError; // Rethrow for the outer catch block
     }
-    
-    // Return the processed response
-    return NextResponse.json({
-      transcript,
-      confidence,
-      words,
-      audioLength,
-      processingTime: duration,
-      model: modelName,
-      timestamp: new Date().toISOString()
-    });
   } catch (error: any) {
     // Enhanced error logging
     console.error('Deepgram test error details:', {
       message: error.message,
       name: error.name,
-      stack: error.stack,
+      stack: error.stack?.split('\n').slice(0, 3).join('\n'),
+      code: error.code,
+      fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
     });
     
+    // Try to extract more details from the error
+    let errorDetails = error.message || String(error);
+    let errorType = error.name || 'Unknown';
+    
+    // Check for Deepgram specific error formats
+    if (error.response) {
+      try {
+        errorDetails = JSON.stringify(error.response);
+      } catch (e) {
+        // Ignore stringify errors
+      }
+    }
+    
     // Determine if it's a Deepgram-specific error
-    const isDeepgramError = error.name === 'DeepgramError' || error.message?.includes('Deepgram');
+    const isDeepgramError = errorType === 'DeepgramError' || 
+                           errorType === 'DeepgramApiError' || 
+                           errorDetails.includes('Deepgram');
     const statusCode = isDeepgramError ? 502 : 500; // 502 Bad Gateway for API errors
     
     return NextResponse.json(
       { 
         error: 'Failed to get response from Deepgram',
-        details: error.message || String(error),
-        type: error.name || 'Unknown'
+        details: errorDetails,
+        type: errorType,
+        timestamp: new Date().toISOString()
       },
       { status: statusCode }
     );
